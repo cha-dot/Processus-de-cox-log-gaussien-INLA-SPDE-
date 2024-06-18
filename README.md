@@ -12,7 +12,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
 - [Modèle](#modèle)
   - [Représentation des données](#représentation-des-données)
   - [Triangulation de l'espace](#triangulation-de-lespace)
-  - [Paramétrage de la matrice Matérn](#paramétrage-de-la-matrice-matérn)
+  - [Paramétrage de la matrice de Matérn](#paramétrage-de-la-matrice-de-matérn)
   - [Cellules de Voronoi](#cellules-de-voronoi)
   - [Vecteurs des observations et de pondération](#vecteurs-des-observations-et-de-pondération)
   - [Matrice d'observation A](#matrice-dobservation-A)
@@ -96,3 +96,38 @@ lines(rbind(bndint$loc, bndint$loc[1,]), pch = 19, cex = .05, col = "orange",
       lwd = 1, lty = 2)
 plot(contour_sp, add = T, border = 4)
 ```
+
+Le domaine est étendu afin de limiter les effets de bord. La triangulation est réalisée à partir des points tirés régulièrement dans l'espace.
+
+```r
+mesh = inla.mesh.2d(loc = rbind(coordinates(GB_PE_eau_fauche_LAMB)), # contrainte = faire passer la mesh par les observations
+                    boundary = list(int = bndint, out = bndext), # limites int et ext
+                    max.edge = c(110, 1000), cutoff = 40, # taille des arrêtes des triangles, max. 110 dans limite int et max. 1000 dans limite ext ; min. 40
+                    crs = "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 
+                    +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
+
+mesh$n # nombre de triangles
+
+par(mar=rep(1,4), mfrow=c(1,1))
+plot(mesh, main = "", asp = 1)
+plot(GB_PE_eau_fauche_LAMB, add = T, col = 2, pch = 16, cex = .3)
+plot(contour_sp, add = T, border = 1, lwd = 2)
+```
+Nous faisons passer la mesh par les observations (les observations constituent donc des sommets de triangles). Cela permet de détenir des informations précises puisque les données à l'intérieur des triangles seront interpolées.
+
+### Paramétrage de la matrice de Matérn
+
+Les champs gaussiens suivent une loi normale multivariée d'espérance nulle et de fonction de variance-covariance, une matrice de type Matérn. Ce type de matrice est flexible et paramétrique permettant de modéliser efficacement la structure de dépendance spatiale entre les observations. Cela permet notamment de supposer que l'autocorrélation  spatiale entre les points diminue avec la distance.<br>
+Le champ spatial est caractérise par 3 hyperparamètres :
+- La rugosité, fixée à 2
+- La variance dont la loi a priori repose sur un PC-prior
+- La portée, correspondant à la distance à partir de laquelle les points ne sont plus significativement autocorrélés. La valeur de la portée dans les paramètres est choisie empiriquement : elle correspond approximativement à une distance qui est 3 fois inférieure à la distance entre les 2 points les plus éloignés du domaine.
+
+```r
+matern = inla.spde2.pcmatern(mesh,
+                             alpha = 2, # rugosité du champ
+                             prior.sigma = c(1, 0.5), # variance, P(sigma > 1) = 0.5 (en mètres ici)
+                             prior.range = c(3000, 0.9)) # portée, P(range < 3000) = 0.9
+```
+
+### Cellules de Voronoi
