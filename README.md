@@ -43,7 +43,7 @@ Détenir les limites spatiales des zones prospectées (ex : disques d'écoute, t
 
 ### Les covariables environnementales (facultatives)
 
-Pour des variables spatiales, détenir des fichiers géospatiaux.
+Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
 Pour des variables temporelles, détenir des tableaux avec les valeurs par année et par période de prospection.
 
 Il est possible d'avoir les données sous un autre format mais cela nécessitera de retravailler les fonctions qui appellent les valeurs des covariables.
