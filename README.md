@@ -250,3 +250,63 @@ veg[vegTMP == 5] = 6 # friches
 veg = as.factor(veg)
 ```
 
+A présent, nous allons définir la fonction qui permettra d'associer les valeurs d'intensité de submersion à chaque observation. Il s'agit ici d'une variable temporelle, une même valeur sera donc associée à toutes les cellules de voronoi et toutes les observations d'une même période de prospectino (voir la [Matrice d'observation A](#matrice-a)).
+
+```r
+f.eau.max = function(annee, prospection) {
+  data = eau[eau$annee == annee,] # sélectionne la ligne correspondant à la bonne année dans le tableau des hauteurs d'eau
+  if(prospection == 1) {return(data[,1])} else{return(data[,2])} # choix de la colonne où il y a la valeur de la prospection correspondante
+}
+```
+On applique la fonction.
+
+```r
+eau_max=NULL
+for (i in 2018:2023){
+  for (j in 1:2){
+    eau_max_1 = f.eau.max(annee = i, prospection = j)
+    eau_max = c(eau_max, eau_max_1) # vecteur qui contient chaque valeur d'intensité de submersion
+  }
+}
+eau_max = matrix(data = eau_max, ncol = 2, byrow = T)
+```
+
+On crée le vecteur de la covariable, de façon à pouvoir le relier à la [Matrice d'observation A](#matrice-a).
+
+```r
+eau_maxTMP = NULL
+for(i in 2018:2023) {
+  for(j in 1:2) {
+    eau_max_I = rep(eau_max[i-2017,j], nv) # on répète parce qu'il y a qu'une seule valeur par période pour toutes les positions
+    eau_max_A = rep(eau_max[i-2017,j], n[i-2017,j]) # idem
+    eau_maxTMP = c(eau_maxTMP, eau_max_I, eau_max_A) # on colle les vecteurs I et A au fur et à mesure
+  }
+}
+```
+
+De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion pour toutes les cellules de voronoi et toutes les observations.
+
+```r
+f.eau.duree = function(annee, prospection) {
+  data = eau[eau$annee == annee,]
+  if(prospection == 1) {return(data[,3])} else{return(data[,5])}
+}
+
+eau_duree=NULL
+for (i in 2018:2023){
+  for (j in 1:2){
+    eau_duree_1 = f.eau.duree(annee = i, prospection = j)
+    eau_duree = c(eau_duree, eau_duree_1)
+  }
+}
+eau_duree = matrix(data = eau_duree, ncol = 2, byrow = T)
+
+eau_dureeTMP = NULL
+for(i in 2018:2023) {
+  for(j in 1:2) {
+    eau_duree_I = rep(eau_duree[i-2017,j], nv)
+    eau_duree_A = rep(eau_duree[i-2017,j], n[i-2017,j])
+    eau_dureeTMP = c(eau_dureeTMP, eau_duree_I, eau_duree_A)
+  }
+}
+```
