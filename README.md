@@ -154,8 +154,13 @@ plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection
 plot(Buffer_sp, border="orange",lwd=2,add=T)
 plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 ```
+La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
+
+![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340672665-cac2d866-cfbb-4da5-86f9-5467d6f84e41.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTM4MDYsIm5iZiI6MTcxODcxMzUwNiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjcyNjY1LWNhYzJkODY2LWNmYmItNGRhNS04NmY5LTU0NjdkNmY4NGU0MS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMjI1MDZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xODU0YjM4MDAwOTY3ODYwOTBkMTM1N2RhMzhjNGQ5YWU5ZDJkZDFiZjBiOWQ0NTM3YjMwYTBjYmU5OWNkMzIyJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.QbUoQpeMEmcCciIP9H7MaBhf4TBT2nqge31wXAktdo4)
 
 ### Vecteur des observations et de pondération
+
+Le vecteur y.pp est composé de 0 et de 1, c'est le vecteur des observations. Le vecteur e.pp est composé des poids pour chacune des cellules de voronoi (c'est-à-dire la surface d'intersection entre les surfaces prospectées et les cellules de voronoi).
 
 ```r
 y.pp = NULL
