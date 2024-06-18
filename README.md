@@ -23,12 +23,14 @@ Télécharger les fonctions pour ce code : `source("inlabookfunctions.R")`
 
 ### Les observations
 
-Jeu de données :
-	- Lignes :
-	 	* Observations (un individu par ligne)
-	- Colonnes :
-		* Coordonnées spatiales
-		* Autres variables : année, numéro de passage (possibilité d'en mettre d'autres)
+**Jeu de données :**
+
+- **Lignes :**
+  - Observations (un individu par ligne)
+
+- **Colonnes :**
+  - Coordonnées spatiales
+  - Autres variables : année, numéro de passage (possibilité d'en mettre d'autres)
 
 
 ### Le domaine d'étude
