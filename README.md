@@ -28,7 +28,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
 
 ## Installation des packages
 
-install.packages("INLA",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/stable"), dep=TRUE)
+`install.packages("INLA",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/stable"), dep=TRUE)`
 
 Si vous faites face à des problèmes de compatibilité à cause de la version du logiciel R, il est possible de télécharger des versions plus anciennes de INLA sur le site : 
 
@@ -70,10 +70,29 @@ Il est possible d'avoir les données sous un autre format mais cela nécessitera
 ### Représentation des données
 
 ```r
+load("dataprocess.rda")
+
 ggplot() +
   geom_sf(data = st_as_sf(GB_PE_eau_fauche_LAMB), col = "blue", size = 0.1) +
   geom_sf(data = st_as_sf(contour_sp), alpha = 0, col = "black") +
   geom_sf(data = st_as_sf(Buffer_sp), alpha = 0.5, col = "orange", linewidth = 0.5)
 ```
 
+### Triangulation de l'espace
 
+Le domaine est triangulé afin de simuler et d'estimer les champs spatiaux aléatoires du modèle.
+
+```r
+tmp = spsample(contour_sp@polygons[[1]], n = 1000, type = "regular") # tirage régulier de 1000 points dans le domaine
+coordLIM = rbind(contour_sp@polygons[[1]]@Polygons[[1]]@coords, tmp@coords) # coordonnées du domaine et des 1000 points
+rm(tmp) # suppression de tmp pour libérer de la mémoire
+
+bndint = inla.nonconvex.hull(coordLIM, convex = -.02) # limite autour des points de coordLIM (dite interne)
+bndext = inla.nonconvex.hull(coordLIM, convex = -.1) # limite de l'extension du domaine (dite externe)
+
+par(mar=rep(1,4), mfrow=c(1,1))
+plot(rbind(bndext$loc, bndext$loc[1,]), type = "l", lwd=2)
+lines(rbind(bndint$loc, bndint$loc[1,]), pch = 19, cex = .05, col = "orange",
+      lwd = 1, lty = 2)
+plot(contour_sp, add = T, border = 4)
+```
