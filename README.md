@@ -156,6 +156,7 @@ plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 ```
 La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
 
+<a id="matrice-a"></a>
 ![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340672665-cac2d866-cfbb-4da5-86f9-5467d6f84e41.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTM4MDYsIm5iZiI6MTcxODcxMzUwNiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjcyNjY1LWNhYzJkODY2LWNmYmItNGRhNS04NmY5LTU0NjdkNmY4NGU0MS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMjI1MDZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xODU0YjM4MDAwOTY3ODYwOTBkMTM1N2RhMzhjNGQ5YWU5ZDJkZDFiZjBiOWQ0NTM3YjMwYTBjYmU5OWNkMzIyJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.QbUoQpeMEmcCciIP9H7MaBhf4TBT2nqge31wXAktdo4)
 
 ### Vecteur des observations et de pondération
@@ -172,3 +173,20 @@ for (i in 1:nrow(n)){ # pour chaque année
   }
 }
 ```
+
+### Matrice d'observation A
+
+La [Matrice d'observation A](#matrice-a) est divisée en matrices I (correspondant aux cellules de voronoi), et en matrices L (correspondant aux observations d'une période et d'une année).
+
+```r
+imat <- Diagonal(nv, rep(1, nv)) # matrice I diagonale de dimensions nv (nombre de cellules de Voronoi), représente la mesh
+lmat <- inla.spde.make.A(mesh, coordinates(GB_PE_eau_fauche_LAMB)) # matrice L qui représente les observations dans l'espace
+A.pp = NULL
+for (i in 2018:2023){
+  for (j in 1:2){
+    indice = (1:nrow(GB_PE_eau_fauche_LAMB))[(GB_PE_eau_fauche_LAMB$annee==i)&(GB_PE_eau_fauche_LAMB$num_passag==j)]
+    A.pp = rbind(A.pp,rbind(imat,lmat[indice,])) # Matrice d'observation A différente pour chaque année (A11, A12...)
+  } # Se référer au schéma
+}
+```
+
