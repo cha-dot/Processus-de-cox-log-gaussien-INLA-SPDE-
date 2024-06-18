@@ -132,7 +132,7 @@ matern = inla.spde2.pcmatern(mesh,
 
 ### Cellules de Voronoi
 
-L'intensité du modèle sera pondérée par la surface de prospection. Cela nécessite l'utilisation de cellules de Voronoi qui sont tracées autour de chacun des sommets des triangles de la première mesh.
+L'intensité, c'est-à-dire le nombre d'individus observé par unité de surface, sera pondérée par la surface de prospection. Cela nécessite l'utilisation de cellules de Voronoi qui sont tracées autour de chacun des sommets des triangles de la première mesh.
 
 ```r
 dmesh <- book.mesh.dual(mesh) # cellules de voronoi
@@ -146,11 +146,24 @@ w <- sapply(1:length(dmesh), function(i) { # pour chaque cellule, calcul de l'ai
   else return(0)
 })
 
-wbis = unlist(lapply(w, max)) # attribution de l'aire d'intersection (w) max (quand 2 buffers chevauchent une seule cellule)
+wbis = unlist(lapply(w, max)) # attribution de l'aire d'intersection (w) max quand 2 buffers chevauchent une seule cellule
 nv = mesh$n # nombre de cellules de voronoi
 n = table(GB_PE_eau_fauche_LAMB$annee,GB_PE_eau_fauche_LAMB$num_passag) # nombre d'observations par année et par période
 
-plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection (effort d'échantillonnage pondéré par la surface de la cellule)
+plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection
 plot(Buffer_sp, border="orange",lwd=2,add=T)
 plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
+```
+
+### Vecteur des observations et de pondération
+
+```r
+y.pp = NULL
+e.pp = NULL
+for (i in 1:nrow(n)){ # pour chaque année
+  for (j in 1:ncol(n)){ # pour chaque période de prospection
+    y.pp = c(y.pp,rep(0:1, c(nv, n[i,j]))) # vecteur qui permettra de relier les observations à la mesh
+    e.pp = c(e.pp,c(wbis, rep(0, n[i,j]))) # vecteur qui permettra de pondérer l'intensité par la surface de prospection
+  }
+}
 ```
