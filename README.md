@@ -131,3 +131,26 @@ matern = inla.spde2.pcmatern(mesh,
 ```
 
 ### Cellules de Voronoi
+
+L'intensité du modèle sera pondérée par la surface de prospection. Cela nécessite l'utilisation de cellules de Voronoi qui sont tracées autour de chacun des sommets des triangles de la première mesh.
+
+```r
+dmesh <- book.mesh.dual(mesh) # cellules de voronoi
+plot(dmesh)
+Buffer = st_as_sf(Buffer_sp) # conversion en format sf
+dmesh_sf = st_as_sf(dmesh) # idem
+st_crs(dmesh_sf) = st_crs(Buffer) # attribution des mêmes systèmes de référence
+w <- sapply(1:length(dmesh), function(i) { # pour chaque cellule, calcul de l'aire d'intersection entre la cellule et les buffers
+  if (nrow(st_intersection(dmesh_sf[i, ], Buffer)) > 0)
+    return(st_area(st_intersection(dmesh_sf[i, ], Buffer)))
+  else return(0)
+})
+
+wbis = unlist(lapply(w, max)) # attribution de l'aire d'intersection (w) max (quand 2 buffers chevauchent une seule cellule)
+nv = mesh$n # nombre de cellules de voronoi
+n = table(GB_PE_eau_fauche_LAMB$annee,GB_PE_eau_fauche_LAMB$num_passag) # nombre d'observations par année et par période
+
+plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection (effort d'échantillonnage pondéré par la surface de la cellule)
+plot(Buffer_sp, border="orange",lwd=2,add=T)
+plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
+```
