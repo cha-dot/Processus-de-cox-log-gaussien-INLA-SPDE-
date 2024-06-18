@@ -4,9 +4,26 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
 ## Table des matières
 
 - [Installation des packages](#installation-des-packages)
-- [Données](#Données)
-- [Code](#code)
-- [Interprétations](#interprétations)
+- [Données](#données)
+  - [Les observations](#les-observations)
+  - [Le domaine d'étude](#le-domaine-detude)
+  - [Les zones de prospections](#les-zones-de-prospection)
+  - [Les covariables environnementales](#les-covariables-environnementales)
+- [Modèle](#modèle)
+  - [Représentation des données](#représentation-des-données)
+  - [Triangulation de l'espace](#triangulation-de-lespace)
+  - [Paramétrage de la matrice Matérn](#paramétrage-de-la-matrice-matérn)
+  - [Cellules de Voronoi](#cellules-de-voronoi)
+  - [Vecteurs des observations et de pondération](#vecteurs-des-observations-et-de-pondération)
+  - [Matrice d'observation A](#matrice-dobservation-A)
+  - [Covariables environnementales](#covariables-environnementales)
+  - [Stack INLA](#stack-inla)
+  - [Formule du modèle](#formule-du-modèle)
+  - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
+  - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
+  - [Courbes de densités a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
+  - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
+  - [Courbes de densités a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
 
 
 ## Installation des packages
@@ -44,6 +61,19 @@ Détenir les limites spatiales des zones prospectées (ex : disques d'écoute, t
 ### Les covariables environnementales (facultatives)
 
 Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
-Pour des variables temporelles, détenir des tableaux avec les valeurs par année et par période de prospection.
+Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).
 
 Il est possible d'avoir les données sous un autre format mais cela nécessitera de retravailler les fonctions qui appellent les valeurs des covariables.
+
+## Modèle
+
+### Représentation des données
+
+```r
+ggplot() +
+  geom_sf(data = st_as_sf(GB_PE_eau_fauche_LAMB), col = "blue", size = 0.1) +
+  geom_sf(data = st_as_sf(contour_sp), alpha = 0, col = "black") +
+  geom_sf(data = st_as_sf(Buffer_sp), alpha = 0.5, col = "orange", linewidth = 0.5)
+```
+
+
