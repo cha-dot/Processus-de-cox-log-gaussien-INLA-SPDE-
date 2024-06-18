@@ -157,7 +157,7 @@ plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
 
 <a id="matrice-a"></a>
-![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340672665-cac2d866-cfbb-4da5-86f9-5467d6f84e41.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTM4MDYsIm5iZiI6MTcxODcxMzUwNiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjcyNjY1LWNhYzJkODY2LWNmYmItNGRhNS04NmY5LTU0NjdkNmY4NGU0MS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMjI1MDZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xODU0YjM4MDAwOTY3ODYwOTBkMTM1N2RhMzhjNGQ5YWU5ZDJkZDFiZjBiOWQ0NTM3YjMwYTBjYmU5OWNkMzIyJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.QbUoQpeMEmcCciIP9H7MaBhf4TBT2nqge31wXAktdo4)
+![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340686454-5abee3ed-33f9-40f9-b746-c7e22400fb3e.PNG?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTY0NjIsIm5iZiI6MTcxODcxNjE2MiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjg2NDU0LTVhYmVlM2VkLTMzZjktNDBmOS1iNzQ2LWM3ZTIyNDAwZmIzZS5QTkc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMzA5MjJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kZjcyOGEyMjM4OTIxYzc3NzAzMDYzZTgwYmZkMzlhZjI2ZTkzYjE1ODZmOGJjM2I2OTE5OGQ3MjRlNTQ5MTQ0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.ekKicQE8Z83QZ2M8rMqB-0TWtb1cFpvi4YmUFmLjgsw)
 
 ### Vecteur des observations et de pondération
 
@@ -185,8 +185,68 @@ A.pp = NULL
 for (i in 2018:2023){
   for (j in 1:2){
     indice = (1:nrow(GB_PE_eau_fauche_LAMB))[(GB_PE_eau_fauche_LAMB$annee==i)&(GB_PE_eau_fauche_LAMB$num_passag==j)]
-    A.pp = rbind(A.pp,rbind(imat,lmat[indice,])) # Matrice d'observation A différente pour chaque année (A11, A12...)
-  } # Se référer au schéma
+    A.pp = rbind(A.pp,rbind(imat,lmat[indice,])) # Matrice d'observation A différente pour chaque année (A11, A12...) # on ajoute les matrices I et L les unes à la suite des autres
+  }
 }
+```
+
+### Covariables environnementales
+
+Chargement des données environnementales
+
+```r
+veg2 = raster("Rgpt_vg_3.tif") # raster végétation
+vegSG2 = as(veg2, "SpatialGridDataFrame") # conversion du format
+
+setwd("Fauche") # spécifier le chemin pour l'ouverture des fichiers plus tard
+# Vecteur qui contient le nom des fichiers qui seront appelés dans la fonction
+shapefiles = c("Fauche_2017_seule.shp", "Fauche_2018_seule.shp", "Fauche_2019_seule.shp", "Fauche_2020_seule.shp", "Fauche_2021_seule.shp", "Fauche_2022_seule.shp")
+
+eau = read.csv("Hauteurs_eau_finales.csv", header = T, stringsAsFactors = T) # tableau des hauteurs d'eau
+```
+A présent, on détermine la fonction qui récupère la valeur de la végétation en chaque point du domaine d'étude. La fonction prend en argument les coordonnées spatiales, ainsi que les fichiers spatiaux de la fauche (pour séparer la végétation fauchée de celle qui ne l'est pas). 
+
+```r
+f.veg.moins = function(x, y, shape) {
+  spp <- SpatialPoints(data.frame(x = x, y = y), proj4string = fm_sp_get_crs(vegSG2)) # création de points spatiaux à partir des coordonnées qui seront fournis
+  proj4string(spp) <- fm_sp_get_crs(vegSG2) # attribution d'un système de référence
+  v <- over(spp, vegSG2) # la valeur de végétation attribuée à chaque point
+  v2 <- over(spp, shape) # la valeur de fauche attribuée à chaque point
+  v$Rgpt_vg_3[is.na(v$Rgpt_vg_3)]=0 # si y a des NA, on transforme en 0
+  v2$id_type_ge[is.na(v2$id_type_ge)]=0 #idem
+  v$Rgpt_vg_3 = ifelse(v$Rgpt_vg_3 %in% c(13,1,11,8) & v2$id_type_ge == 1, 14, v$Rgpt_vg_3) # si la veg est herbacée haute (13, 1, 11, 8) et qu'elle est fauchée (1), alors on la met dans un groupe (14)
+  v$Rgpt_vg_3 = ifelse(v$Rgpt_vg_3 %in% c(13,1,11,8) & v2$id_type_ge == 0, 15, v$Rgpt_vg_3) # si elle n'est pas fauchée (0), on la met dans un autre groupe (15)
+  return(v$Rgpt_vg_3)
+}
+```
+On applique la fonction sur les données pour chaque année et période de prospection. Dans la fonction, on renseigne les coordonnées spatiales de la mesh et des observations de l'année i et la période j, et le fichier spatiale de la fauche à l'année i-1 (choix d'étude).
+
+```r
+vegTMP=NULL
+for (i in 2018:2023){
+  for (j in 1:2){
+    shapefile = st_read(shapefiles[i - 2017]) # i-2017 pour ramener les indices de 1 à 6 : appelle les fichiers de fauche
+    shapefile = as(shapefile, "Spatial") # conversion du format
+    crs(shapefile) = "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80
++towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+    indice = (1:nrow(GB_PE_eau_fauche_LAMB))[(GB_PE_eau_fauche_LAMB$annee==i)&(GB_PE_eau_fauche_LAMB$num_passag==j)] # indice qui détermine l'année et la période pour avoir les observations associées
+    vegTMP = c(vegTMP,
+               f.veg.moins(x=c(mesh$loc[,1], coordinates(GB_PE_eau_fauche_LAMB)[indice,1]),
+                           y = c(mesh$loc[,2], coordinates(GB_PE_eau_fauche_LAMB)[indice,2]),
+                           shape = shapefile)) # on applique la fonction
+  }
+}
+```
+Dans le cadre de notre étude, les groupements végétaux sont remaniés.
+
+```r
+veg = vegTMP
+veg[vegTMP == 6 | vegTMP == 12 | vegTMP == 4 | vegTMP == 7| vegTMP == 9 | vegTMP == 10] = 1 # rase
+veg[vegTMP == 14] = 2 # haute fauchee
+veg[vegTMP == 15] = 3 # haute non fauchee
+veg[vegTMP == 2] = 4 # arbustive
+veg[vegTMP == 3] = 5 # roselières 
+veg[vegTMP == 5] = 6 # friches
+veg = as.factor(veg)
 ```
 
