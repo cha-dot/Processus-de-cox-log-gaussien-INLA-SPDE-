@@ -82,6 +82,8 @@ ggplot() +
   geom_sf(data = st_as_sf(Buffer_sp), alpha = 0.5, col = "orange", linewidth = 0.5)
 ```
 
+![Représentation des données](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/carte_buffers.jpg?raw=true)
+
 ### Triangulation de l'espace
 
 Le domaine est triangulé afin de simuler et d'estimer les champs spatiaux aléatoires du modèle.
