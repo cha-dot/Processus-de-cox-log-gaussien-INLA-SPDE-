@@ -23,7 +23,8 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
   - [Courbes de densité a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
-  - [Courbes de densités a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
+  - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
+  - [Calcul des probabilités a posteriori des hyperparamètres](#calcul-des-probabilités-a-posteriori-des-hyperparamètres)
 
 
 ## Installation des packages
@@ -518,6 +519,42 @@ ggplot(post.stat.veg.gg, aes(x = Variables)) +
 sum(post[,4]>post[,3])/Nrep # proba que le paramètre de la veg non fauchée > fauchée
 sum(post[,9]<0)/Nrep # proba que la duree_sub < 0
 sum(post[,8]>0)/Nrep # proba que max_sub > 0
+```
+
+### Courbes de densité a posteriori des hyperparamètres
+
+Il peut être intéressant d'explorer les lois a posteriori des hyperparamètres, c'est-à-dire de la variance et de la portée. Pour cela, on échantillonne les hyperparamètres dans le modèle.
+
+```r
+pr.hyper.tot = inla.hyperpar.sample(Nrep, ppVIV) # échantillonnage
+pr.hyper.tot.df = as.data.frame(pr.hyper.tot)
+pr.hyper.tot.range = pivot_longer(pr.hyper.tot.df, cols = 1, names_to = "Portée",values_to = "Valeurs") # format ggplot
+pr.hyper.tot.precision = pivot_longer(pr.hyper.tot.df, cols = 2, names_to = "Précision",values_to = "Valeurs")
+hyper.stats = apply(pr.hyper.tot.df, 2, quantile, probs = c(0.025, 0.5, 0.975)) # quantiles des hyperparamètres
+
+# Portée
+ggplot(data = pr.hyper.tot.range, aes(x = Valeurs, fill = Portée)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
+  geom_vline(xintercept = hyper.stats[2, "Range for i"], linetype = "dotdash", color = "black")+ # médiane
+  geom_vline(xintercept = hyper.stats[1, "Range for i"], linetype = "solid", col = "brown")+ # quantile à 2.5%
+  geom_vline(xintercept = hyper.stats[3, "Range for i"], linetype = "solid", col = "brown") + # quantile à 97.5%
+  labs(x = "Portée (m)", y = "Densité")
+
+# Précision
+ggplot(data = pr.hyper.tot.precision, aes(x = Valeurs, fill = Précision)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
+  geom_vline(xintercept = hyper.stats[2, "Stdev for i"], linetype = "dashed", color = "black")+
+  geom_vline(xintercept = hyper.stats[1, "Stdev for i"], linetype = "solid", col = "brown")+
+  geom_vline(xintercept = hyper.stats[3, "Stdev for i"], linetype = "solid", col = "brown")+
+  labs(x = "Ecart_type", y = "Densité")
+```
+### Calcul des probabilités a posteriori des hyperparamètres
+
+Il est possible de vérifier les lois a priori des hyperparamètres :
+
+```r
+sum(pr.hyper.tot[,2]>1)/Nrep # variance
+sum(pr.hyper.tot[,1]<3000)/Nrep # portée
 ```
 
 
