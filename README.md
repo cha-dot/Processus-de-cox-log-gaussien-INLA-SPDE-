@@ -62,10 +62,12 @@ Si elles ne recouvrent pas l'entiereté du domaine d'étude, détenir les limite
 ### Les covariables environnementales
 
 Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
-Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).<br>
-L'ajout de covariables environnementales est facultatif.
+Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).
+
 
 Il est possible d'avoir les données sous un autre format mais cela nécessitera de retravailler les fonctions qui appellent les valeurs des covariables.
+
+L'ajout de covariables environnementales est facultatif.
 
 ## Modèle
 
