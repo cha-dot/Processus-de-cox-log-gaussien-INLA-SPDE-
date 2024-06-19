@@ -158,7 +158,7 @@ plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
 
 <a id="matrice-a"></a>
-![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340686454-5abee3ed-33f9-40f9-b746-c7e22400fb3e.PNG?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTY0NjIsIm5iZiI6MTcxODcxNjE2MiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjg2NDU0LTVhYmVlM2VkLTMzZjktNDBmOS1iNzQ2LWM3ZTIyNDAwZmIzZS5QTkc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMzA5MjJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kZjcyOGEyMjM4OTIxYzc3NzAzMDYzZTgwYmZkMzlhZjI2ZTkzYjE1ODZmOGJjM2I2OTE5OGQ3MjRlNTQ5MTQ0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.ekKicQE8Z83QZ2M8rMqB-0TWtb1cFpvi4YmUFmLjgsw)
+![Matrice d'observation A](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/matrice%20a%20compl%C3%A8te.PNG?raw=true)
 
 ### Vecteur des observations et de pondération
 
