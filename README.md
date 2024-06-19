@@ -250,7 +250,7 @@ veg[vegTMP == 5] = 6 # friches
 veg = as.factor(veg)
 ```
 
-A présent, nous allons définir la fonction qui permettra d'associer les valeurs d'intensité de submersion à chaque observation. Il s'agit ici d'une variable temporelle, une même valeur sera donc associée à toutes les cellules de voronoi et toutes les observations d'une même période de prospectino (voir la [Matrice d'observation A](#matrice-a)).
+A présent, nous allons définir la fonction qui permettra d'associer les valeurs d'intensité de submersion à chaque observation. Il s'agit ici d'une variable temporelle, une même valeur sera donc associée à toutes les cellules de voronoi et toutes les observations d'une même période de prospection (voir la [Matrice d'observation A](#matrice-a)).
 
 ```r
 f.eau.max = function(annee, prospection) {
@@ -284,7 +284,7 @@ for(i in 2018:2023) {
 }
 ```
 
-De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion pour toutes les cellules de voronoi et toutes les observations.
+De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion (variable temporelle) pour toutes les cellules de voronoi et toutes les observations.
 
 ```r
 f.eau.duree = function(annee, prospection) {
@@ -310,3 +310,76 @@ for(i in 2018:2023) {
   }
 }
 ```
+
+### Stack INLA
+
+Le stack INLA constitue un stock des matrices et vecteurs créés au-dessus. Cela permet de combiner les différentes sources de données et les différents effets dans une seule entité.
+
+```r
+stk.pp <- inla.stack(                   
+  data = list(y = y.pp, e = e.pp), # vecteurs d'observation et de pondération
+  A = list(1, A.pp), # matrice d'observation
+  effects = list(list(veg = veg, max_sub = eau_maxTMP, duree_sub = eau_dureeTMP), # covariables ; b0 = 1 quand y a juste le champ spatial
+                 list(i = 1:nv)), # effet champ spatial (1 au nombre de points de la mesh)
+  tag = 'pp')
+```
+
+### Formule du modèle
+
+Le modèle est composé d'effets fixes (les covariables environnementales) et d'un effet aléatoire (le champ spatial gaussien).<br>
+Une première stratégie était de retirer l'intercept du modèle. Celui-ci serait donc compris dans chacune des modalités de la végétation (et non confondu avec l'effet de la première modalité), permettant la comparaison de chaque effet.
+Mais pour contourner des problèmes de corrélation entre les lois a posteriori des modalités de la variable "végétation", cette dernière est ajoutée comme une variable aléatoire au modèle en contraignant la somme des paramètres à 0 `constr = T`.
+
+```r
+ppVIV <- inla(y ~ 1 + f(i, model = matern) + max_sub + duree_sub  + f(veg, model = "iid", constr = T),  # modèle indépendant et identiquement distribué
+              family = 'poisson', data = inla.stack.data(stk.pp),
+              control.predictor = list(A = inla.stack.A(stk.pp)), # matrice d'observation extraite du stack
+              E = inla.stack.data(stk.pp)$e, # vecteur de pondération extrait du stack
+              control.compute=list(dic=TRUE, cpo=TRUE, config = TRUE, return.marginals.predictor=TRUE), # retourne les marginales des prédictions
+              control.inla=list(strategy="simplified.laplace",int.strategy="eb")) # approximation de Laplace simplifiée ; eb = stratégie Empirical Bayes
+
+summary(ppVIV)
+```
+
+### Représentation spatiale des prédictions
+
+Afin de représenter spatialement les prédictions, il est nécessaire de créer une grille de pixels qui couvre la mesh. Un projecteur projettera donc les résultats du modèle ajusté sur la grille de pixels définie.
+
+```r
+toto = extent(contour_sp) # étendue totale des limites de la réserve (coordonnées minimales et maximales en x et y)
+xrange = toto[2]-toto[1] # on fait ces manips pour avoir des pixels carrés et pas rectangulaires par la suite
+yrange = toto[4]-toto[3]
+resopred=300 # nombre de pixels (modulable)
+st_crs(contour) = NA
+inla.identical.CRS(mesh, contour)
+contour = st_set_crs(contour, inla.CRS(mesh)) # mêmes systèmes de référence
+pxl <- pixels(mesh, mask=contour, nx = resopred, # nx = nombre de pixels longitudinaux
+              ny = round(resopred*yrange/xrange)) # ny = nombre de pixels latitudinaux
+projgrid <- inla.mesh.projector(mesh, coordinates(pxl)) # projecteur
+```
+
+On stocke les prédictions de chaque observation dans un vecteur `predtot`. Il faut donc aller récupérer les médianes dans `ppVIV$summary.linear.predictor` pour chaque période et année, nécessitant l'utilisation d'indices `indN` et `indNV`. 
+
+```r
+indN = 0 # indice
+indNV = 1 # indice
+predtot = NULL
+for(i in 1:6){
+  for(j in 1:2){
+    predtot = rbind(predtot, ppVIV$summary.linear.predictor$'0.5quant'[((indNV-1)*nv+indN+1):(indNV*nv+indN)]) # toutes les prédictions
+    indN = indN + n[i,j]
+    indNV = indNV + 1
+    
+  }
+}
+```
+
+On peut à présent représenter les prédictions spatiales (des prédicteurs linéaires ici). Toutes les prédictions sont sommées.
+
+```
+Wmean <- inla.mesh.project(projgrid, apply(predtot,2,sum)) # projette spatialement les valeurs des prédicteurs linéaires
+ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=Wmean))+gg(GB_PE_eau_fauche_LAMB,size=0.5)
+```
+Nous allons à présent représenter spatialement les densités prédites des individus de l'espèce.
+
+
