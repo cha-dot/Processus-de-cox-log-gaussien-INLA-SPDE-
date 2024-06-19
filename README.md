@@ -556,5 +556,5 @@ Il est possible de vérifier les lois a priori des hyperparamètres :
 sum(pr.hyper.tot[,2]>1)/Nrep # variance
 sum(pr.hyper.tot[,1]<3000)/Nrep # portée
 ```
-![Lois des hyperparamètres](images/lois hyperparametres.PNG)
+![Lois des hyperparamètres](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/lois%20hyperparametres.PNG?raw=true)
 
