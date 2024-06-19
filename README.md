@@ -380,6 +380,51 @@ On peut à présent représenter les prédictions spatiales (des prédicteurs li
 Wmean <- inla.mesh.project(projgrid, apply(predtot,2,sum)) # projette spatialement les valeurs des prédicteurs linéaires
 ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=Wmean))+gg(GB_PE_eau_fauche_LAMB,size=0.5)
 ```
-Nous allons à présent représenter spatialement les densités prédites des individus de l'espèce.
+Nous allons à présent représenter spatialement les densités prédites des individus de l'espèce. Nous récupérons toutes les prédictions de l'intensité (nombre d'individus moyen par unité de surface).
+
+```r
+indN = 0
+indNV = 1
+predtot = NULL
+for(i in 1:6){
+  for(j in 1:2){
+    predtot = rbind(predtot, ppVIV$summary.fitted.values$'0.5quant'[((indNV-1)*nv+indN+1):(indNV*nv+indN)]) # donc fitted.values
+    indN = indN + n[i,j]
+    indNV = indNV + 1
+    
+  }
+}
+
+fitval = inla.mesh.project(projgrid,
+                           apply(predtot,2,sum)) # projecteur des intensités prédites
+```
+
+Pour représenter la densité des individus, nous multiplions l'intensité par la surface du domaine.
+
+```r
+ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=fitval*as.numeric(st_area(rSF)))) + scale_fill_viridis(option = "H") + labs(fill = "Nombre d'individus/pixel") # espérance du nb de pts
+```
+
+Nous allons stocker les observations par pixel dans un vecteur.
+
+```r
+r = as(pxl, "SpatialPolygonsDataFrame") # conversion du format
+rSF=st_as_sf(r) # idem
+datvivSF = st_as_sf(GB_PE_eau_fauche_LAMB) # idem
+st_crs(rSF) = st_crs(datvivSF) # homogénéisation des crs
+test=st_intersects(rSF,datvivSF) # intersection entre les observations et chaque pixel
+NobsVIV=unlist(lapply(test,length)) # nb d'observations par pixel
+
+```
+
+Il est alors possible d'explorer graphiquement l'ajustement des prédictions avec les observations. L'alignement des points sur la droite traduirait un ajustement parfait des prédicitions. Des points au-dessus de la droite correspondrait à un sur-ajustement, alors que des points en-dessous de la droite exprimeraient un sous-ajustement.
+
+```r
+plot(NobsVIV,fitval*st_area(rSF)) 
+abline(a=0,b=1,col=4,lwd=2,lty=2) # graphe pour voir l'ajustement des pred
+```
+
+
+
 
 
