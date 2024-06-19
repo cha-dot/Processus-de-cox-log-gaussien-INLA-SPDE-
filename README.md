@@ -21,7 +21,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Formule du modèle](#formule-du-modèle)
   - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
-  - [Courbes de densités a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
+  - [Courbes de densité a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
   - [Courbes de densités a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
 
@@ -414,7 +414,6 @@ datvivSF = st_as_sf(GB_PE_eau_fauche_LAMB) # idem
 st_crs(rSF) = st_crs(datvivSF) # homogénéisation des crs
 test=st_intersects(rSF,datvivSF) # intersection entre les observations et chaque pixel
 NobsVIV=unlist(lapply(test,length)) # nb d'observations par pixel
-
 ```
 
 Il est alors possible d'explorer graphiquement l'ajustement des prédictions avec les observations. L'alignement des points sur la droite traduirait un ajustement parfait des prédicitions. Des points au-dessus de la droite correspondrait à un sur-ajustement, alors que des points en-dessous de la droite exprimeraient un sous-ajustement.
@@ -424,7 +423,101 @@ plot(NobsVIV,fitval*st_area(rSF))
 abline(a=0,b=1,col=4,lwd=2,lty=2) # graphe pour voir l'ajustement des pred
 ```
 
+### Qualité d'ajustement du modèle
+
+L'AUC (Area Under the Curve), l'aire sous la courbe ROC (Receiver Operating Characteristic), est une métrique permettant d'évaluer la qualité d'ajustement d'un modèle. Cela repose sur la comparaison de paires de données (observations/prédictions). Il nous faut transformer les observations en données de présence/absence (données binaires), et les prédictions en probabilité de présence (données continues).
+
+```r
+NobsVIV_bis = as.numeric(NobsVIV > 0) # les pixels où il y a présence (observations)
+predTEST = 1-exp(-as.numeric(fitval*st_area(rSF))) # estimation de la probabilité de présence
+testroc=roc(NobsVIV_bis,predTEST)
+testroc # AUC
+plot.roc(NobsVIV_bis, predTEST, col="red", print.thres="best") # courbe roc
+```
+### Courbes de densité a posteriori des effets fixes
+
+L'estimation bayésienne des paramètres permet d'analyser leur distribution a posteriori. Nous procédons alors à un échantillonnage du modèle.
+
+```r
+Nrep=2000 # nombre d'échantillons
+pr.int.tot <- inla.posterior.sample(Nrep,ppVIV) # échantillonnage dans le modèle
+ind=grep("veg",rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui a les paramètres vg
+m = grep("max_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui a les paramètres max_sub
+d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui a les paramètres duree_sub
+post=matrix(unlist(lapply(pr.int.tot,function(x){x$latent[c(ind,m,d),]})),nrow=Nrep,byrow=T) # Nrep valeurs des paramètres pour chaque variable
+post = as.data.frame(post)
+colnames(post) = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches", "intensite_sub", "duree_sub")
+```
+
+Les paramètres de chaque variable sont convertis à un format compatible avec la package `ggplot`. Afin d'afficher les intervalles de crédibilité sur les graphes, nous allons récupérer les valeurs des paramètres pour les quantiles à 2.5% et 97.5%.
+
+```r
+post_veg <- pivot_longer(post, cols = 1:7, names_to = "Variables", values_to = "Valeur") # format ggplot
+post_duree = pivot_longer(post, cols = 9, names_to = "Variables", values_to = "Valeur")
+post_max = pivot_longer(post, cols = 8, names_to = "Variables", values_to = "Valeur")
+
+post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres de chaque quantile pour chaque variable
+post.stat.veg = post.stat[,1:7] # paramètres veg
+post.stat.duree = post.stat[,9] # paramètre duree_sub
+post.stat.max = post.stat[,8] # paramètre max_sub
+```
+
+Passons à la représentation graphique de ces densités a posteriori.
+
+```r
+# Végétation
+ggplot(data = post_veg, aes(x = Valeur, color = Variables)) +
+  geom_density(adjust = 1.5, fill = "transparent", size = 0.7) +
+  theme_ipsum()
 
 
+# Durée de submersion
+ggplot(data = post_duree, aes(x = Valeur, fill = Variables)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") + # alpha = transparence
+  geom_vline(aes(xintercept = post.stat[2, "duree_sub"], color = "Ligne 1"), linetype = "dotdash") + # médiane
+  geom_vline(aes(xintercept = post.stat[1, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 2.5%
+  geom_vline(aes(xintercept = post.stat[3, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 97.5%
+  scale_color_manual(values = c("black", "brown"), 
+                     labels = c("Médiane", "Intervalle de crédibilité à 95%")) +
+  theme_ipsum() +
+  labs(x = "estimation du paramètre", fill = "Variable", color = "Légendes")
+
+
+# Max
+ggplot(data = post_max, aes(x = Valeur, fill = Variables)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
+  geom_vline(aes(xintercept = post.stat[2, "intensite_sub"],color = "Ligne 1"), linetype = "dotdash")+ # médiane
+  geom_vline(aes(xintercept = post.stat[1, "intensite_sub"],color = "Ligne 2"), linetype = "solid")+ # quantile à 2.5%
+  geom_vline(aes(xintercept = post.stat[3, "intensite_sub"], color = "Ligne 2"), linetype = "solid")+ # quantile à 97.5%
+  scale_color_manual(values = c("black", "brown"),
+                     labels = c("Médiane", "Intervalle de crédibilité à 95%"))+
+  theme_ipsum()+
+  labs(x = "estimation du paramètre", fill = "Variables", color = "Légendes")
+```
+Une autre représentation peut s'avérer plus lisible pour l'affichage d'un grand nombre de paramètres ou de modalités sur un même graphe, comme c'est le cas ici avec la variable `végétation`.
+
+```r
+post.stat.veg.gg <- data.frame(
+  Variables = 1:ncol(post.stat.veg),
+  Mediane = post.stat.veg[2, ],
+  Lower_CI = post.stat.veg[1, ], # quantile à 2.5%
+  Upper_CI = post.stat.veg[3, ] # quantile à 97.5%
+)
+
+ggplot(post.stat.veg.gg, aes(x = Variables)) +
+  geom_point(aes(y = Mediane), size = 3, shape = 16)+ # point représentant la médiane
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2)+ # barres d'erreur pour les intervalles de crédibilité
+  geom_text(aes(y = Mediane, label = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches")), vjust = -1, size = 4, hjust=-0.05)+
+# vjust et hjust permettent d'ajuster la position des étiquettes
+  scale_x_discrete(labels = NULL)+ # n'affiche pas les étiquettes sur l'axe des x
+  labs(x = "Types de végétation", y = "Distributions a posteriori")
+```
+### Calcul des probabilités a posteriori
+
+```r
+sum(post[,4]>post[,3])/Nrep # proba que le paramètre de la veg non fauchée > fauchée
+sum(post[,9]<0)/Nrep # proba que la duree_sub < 0
+sum(post[,8]>0)/Nrep # proba que max_sub > 0
+```
 
 
