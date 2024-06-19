@@ -55,14 +55,15 @@ Télécharger les fonctions pour ce code : `source("inlabookfunctions.R")`
 
 Détenir les limites spatiales du domaine d'étude.
 
-### Les zones de prospection (si elles ne recouvrent pas l'entiereté du domaine d'étude)
+### Les zones de prospection
 
-Détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
+Si elles ne recouvrent pas l'entiereté du domaine d'étude, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
 
-### Les covariables environnementales (facultatives)
+### Les covariables environnementales
 
 Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
-Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).
+Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).<br>
+L'ajout de covariables environnementales est facultatif.
 
 Il est possible d'avoir les données sous un autre format mais cela nécessitera de retravailler les fonctions qui appellent les valeurs des covariables.
 
