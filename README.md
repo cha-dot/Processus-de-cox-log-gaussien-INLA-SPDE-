@@ -174,22 +174,22 @@ Nous allons maitenant élaborer les vecteurs d'observations, de pondération, de
 
 ### Vecteur des observations et de pondération
 
-Le vecteur y.pp est composé de 0 et de 1, c'est le vecteur des observations. Le vecteur e.pp est composé des poids pour chacune des cellules de voronoi (c'est-à-dire la surface d'intersection entre les surfaces prospectées et les cellules de voronoi).
+Le vecteur y.pp est composé de 0 et de 1, c'est le vecteur des observations. Le vecteur e.pp est composé des poids de chaque cellule de voronoi (c'est-à-dire la surface d'intersection entre les surfaces prospectées et les cellules de voronoi).
 
 ```r
 y.pp = NULL
 e.pp = NULL
 for (i in 1:nrow(n)){ # pour chaque année
   for (j in 1:ncol(n)){ # pour chaque période de prospection
-    y.pp = c(y.pp,rep(0:1, c(nv, n[i,j]))) # vecteur qui permettra de relier les observations à la mesh
-    e.pp = c(e.pp,c(wbis, rep(0, n[i,j]))) # vecteur qui permettra de pondérer l'intensité par la surface de prospection
+    y.pp = c(y.pp,rep(0:1, c(nv, n[i,j]))) # vecteur des observations (permettra de relier les observations à la mesh)
+    e.pp = c(e.pp,c(wbis, rep(0, n[i,j]))) # vecteur des poids (permettra de pondérer l'intensité par la surface de prospection)
   }
 }
 ```
 
 ### Matrice d'observation A
 
-La [Matrice d'observation A](#matrice-a) est divisée en matrices I (correspondant aux cellules de voronoi), et en matrices L (correspondant aux observations d'une période et d'une année).
+La [Matrice d'observation A](#matrice-a) est divisée en matrices I (représentant les cellules de voronoi), et en matrices L (représentant les observations d'une période et d'une année).
 
 ```r
 imat <- Diagonal(nv, rep(1, nv)) # matrice I diagonale de dimensions nv (nombre de cellules de Voronoi), représente la mesh
@@ -226,13 +226,13 @@ f.veg.moins = function(x, y, shape) {
   v <- over(spp, vegSG2) # la valeur de végétation attribuée à chaque point
   v2 <- over(spp, shape) # la valeur de fauche attribuée à chaque point
   v$Rgpt_vg_3[is.na(v$Rgpt_vg_3)]=0 # si y a des NA, on transforme en 0
-  v2$id_type_ge[is.na(v2$id_type_ge)]=0 #idem
+  v2$id_type_ge[is.na(v2$id_type_ge)]=0 # idem
   v$Rgpt_vg_3 = ifelse(v$Rgpt_vg_3 %in% c(13,1,11,8) & v2$id_type_ge == 1, 14, v$Rgpt_vg_3) # si la veg est herbacée haute (13, 1, 11, 8) et qu'elle est fauchée (1), alors on la met dans un groupe (14)
   v$Rgpt_vg_3 = ifelse(v$Rgpt_vg_3 %in% c(13,1,11,8) & v2$id_type_ge == 0, 15, v$Rgpt_vg_3) # si elle n'est pas fauchée (0), on la met dans un autre groupe (15)
   return(v$Rgpt_vg_3)
 }
 ```
-On applique la fonction sur les données pour chaque année et période de prospection. Dans la fonction, on renseigne les coordonnées spatiales de la mesh et des observations de l'année i et la période j, et le fichier spatiale de la fauche à l'année i-1 (choix d'étude).
+On applique la fonction sur les données pour chaque année et période de prospection. Dans la fonction, on renseigne les coordonnées spatiales de la mesh et des observations de l'année i et la période j, et le fichier spatial de la fauche à l'année i-1 (choix d'étude).
 
 ```r
 vegTMP=NULL
@@ -275,8 +275,8 @@ On applique la fonction.
 
 ```r
 eau_max=NULL
-for (i in 2018:2023){
-  for (j in 1:2){
+for (i in 2018:2023){ # pour chaque année
+  for (j in 1:2){ # pour chaque période
     eau_max_1 = f.eau.max(annee = i, prospection = j)
     eau_max = c(eau_max, eau_max_1) # vecteur qui contient chaque valeur d'intensité de submersion
   }
@@ -284,7 +284,7 @@ for (i in 2018:2023){
 eau_max = matrix(data = eau_max, ncol = 2, byrow = T)
 ```
 
-On crée le vecteur de la covariable, de façon à pouvoir le relier à la [Matrice d'observation A](#matrice-a).
+On crée le vecteur de la covariable, de façon à pouvoir le relier à la [Matrice d'observation A](#matrice-a). C'est à cette étape que l'on associe une valeur pour chaque cellule de Voronoi et pour chaque observation.
 
 ```r
 eau_maxTMP = NULL
@@ -297,7 +297,7 @@ for(i in 2018:2023) {
 }
 ```
 
-De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion (variable temporelle) pour toutes les cellules de voronoi et toutes les observations.
+De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion (variable temporelle) pour toutes les cellules de voronoi et observations.
 
 ```r
 f.eau.duree = function(annee, prospection) {
@@ -326,14 +326,14 @@ for(i in 2018:2023) {
 
 ### Stack INLA
 
-Le stack INLA constitue un stock des matrices et vecteurs créés au-dessus. Cela permet de combiner les différentes sources de données et les différents effets dans une seule entité.
+Le stack INLA constitue un stock des matrices et vecteurs créés juste avant. Cela permet de combiner les différentes sources de données et les différents effets dans une seule entité.
 
 ```r
 stk.pp <- inla.stack(                   
   data = list(y = y.pp, e = e.pp), # vecteurs d'observation et de pondération
   A = list(1, A.pp), # matrice d'observation
   effects = list(list(veg = veg, max_sub = eau_maxTMP, duree_sub = eau_dureeTMP), # covariables ; b0 = 1 quand y a juste le champ spatial
-                 list(i = 1:nv)), # effet champ spatial (1 au nombre de points de la mesh)
+                 list(i = 1:nv)), # effet champ spatial
   tag = 'pp')
 ```
 
