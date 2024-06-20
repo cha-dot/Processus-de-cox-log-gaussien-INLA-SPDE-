@@ -162,6 +162,9 @@ plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection
 plot(Buffer_sp, border="orange",lwd=2,add=T)
 plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 ```
+
+![Cellules de voronoi](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/voronoi_complet.jpeg?raw=true)
+
 La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
 
 <a id="matrice-a"></a>
