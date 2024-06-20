@@ -79,6 +79,8 @@ ggplot() +
   geom_sf(data = st_as_sf(Buffer_sp), alpha = 0.5, col = "orange", linewidth = 0.5)
 ```
 
+![Représentation des données](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/carte_buffers.jpg?raw=true)
+
 ### Triangulation de l'espace
 
 Le domaine est triangulé afin de simuler et d'estimer les champs spatiaux aléatoires du modèle.
@@ -98,6 +100,8 @@ lines(rbind(bndint$loc, bndint$loc[1,]), pch = 19, cex = .05, col = "orange",
 plot(contour_sp, add = T, border = 4)
 ```
 
+![Limites du domaine](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/limites_complet.jpeg?raw=true)
+
 Le domaine est étendu afin de limiter les effets de bord. La triangulation est réalisée à partir des points tirés régulièrement dans l'espace.
 
 ```r
@@ -114,6 +118,9 @@ plot(mesh, main = "", asp = 1)
 plot(GB_PE_eau_fauche_LAMB, add = T, col = 2, pch = 16, cex = .3)
 plot(contour_sp, add = T, border = 1, lwd = 2)
 ```
+
+![Triangulation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/mesh_simple.jpeg?raw=true)
+
 Nous faisons passer la mesh par les observations (les observations constituent donc des sommets de triangles). Cela permet de détenir des informations précises puisque les données à l'intérieur des triangles seront interpolées.
 
 ### Paramétrage de la matrice de Matérn
@@ -155,6 +162,9 @@ plot(dmesh,col=(wbis>0)*4) # cellules colorées = zones de prospection
 plot(Buffer_sp, border="orange",lwd=2,add=T)
 plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 ```
+
+![Cellules de voronoi](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/voronoi_complet.jpeg?raw=true)
+
 La matrice d'observation A permet de faire le lien entre la mesh, les observations et les covariables. Nous allons construire manuellement cette matrice, ainsi que les vecteurs d'observations, de pondération et des covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de l'élaboration des différentes parties.
 
 <a id="matrice-a"></a>
@@ -406,6 +416,8 @@ Pour représenter la densité des individus, nous multiplions l'intensité par l
 ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=fitval*as.numeric(st_area(rSF)))) + scale_fill_viridis(option = "H") + labs(fill = "Nombre d'individus/pixel") # espérance du nb de pts
 ```
 
+![Carte densités individus](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/derniere_carte_dalto.jpg?raw=true)
+
 Nous allons stocker les observations par pixel dans un vecteur.
 
 ```r
@@ -424,6 +436,8 @@ plot(NobsVIV,fitval*st_area(rSF))
 abline(a=0,b=1,col=4,lwd=2,lty=2) # graphe pour voir l'ajustement des pred
 ```
 
+![Ajustement](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/ajustement.png?raw=true)
+
 ### Qualité d'ajustement du modèle
 
 L'AUC (Area Under the Curve), l'aire sous la courbe ROC (Receiver Operating Characteristic), est une métrique permettant d'évaluer la qualité d'ajustement d'un modèle. Cela repose sur la comparaison de paires de données (observations/prédictions). Il nous faut transformer les observations en données de présence/absence (données binaires), et les prédictions en probabilité de présence (données continues).
@@ -435,6 +449,9 @@ testroc=roc(NobsVIV_bis,predTEST)
 testroc # AUC
 plot.roc(NobsVIV_bis, predTEST, col="red", print.thres="best") # courbe roc
 ```
+
+
+
 ### Courbes de densité a posteriori des effets fixes
 
 L'estimation bayésienne des paramètres permet d'analyser leur distribution a posteriori. Nous procédons alors à un échantillonnage du modèle.
@@ -469,9 +486,13 @@ Passons à la représentation graphique de ces densités a posteriori.
 # Végétation
 ggplot(data = post_veg, aes(x = Valeur, color = Variables)) +
   geom_density(adjust = 1.5, fill = "transparent", size = 0.7) +
+  labs(x = "estimation du paramètre", y = "densité")+
   theme_ipsum()
+```
 
+![Densités végétation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/densite_veg.jpg?raw=true)
 
+```r
 # Durée de submersion
 ggplot(data = post_duree, aes(x = Valeur, fill = Variables)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") + # alpha = transparence
@@ -482,8 +503,11 @@ ggplot(data = post_duree, aes(x = Valeur, fill = Variables)) +
                      labels = c("Médiane", "Intervalle de crédibilité à 95%")) +
   theme_ipsum() +
   labs(x = "estimation du paramètre", fill = "Variable", color = "Légendes")
+```
 
+[Densité durée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/densite_duree.jpg?raw=true)
 
+```r
 # Max
 ggplot(data = post_max, aes(x = Valeur, fill = Variables)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
@@ -495,6 +519,9 @@ ggplot(data = post_max, aes(x = Valeur, fill = Variables)) +
   theme_ipsum()+
   labs(x = "estimation du paramètre", fill = "Variables", color = "Légendes")
 ```
+
+![Densité max](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/max_veg.jpg?raw=true)
+
 Une autre représentation peut s'avérer plus lisible pour l'affichage d'un grand nombre de paramètres ou de modalités sur un même graphe, comme c'est le cas ici avec la variable `végétation`.
 
 ```r
@@ -513,6 +540,9 @@ ggplot(post.stat.veg.gg, aes(x = Variables)) +
   scale_x_discrete(labels = NULL)+ # n'affiche pas les étiquettes sur l'axe des x
   labs(x = "Types de végétation", y = "Distributions a posteriori")
 ```
+
+![A posteriori végétation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/a_posteriori_veg.jpg?raw=true)
+
 ### Calcul des probabilités a posteriori
 
 ```r
@@ -539,15 +569,22 @@ ggplot(data = pr.hyper.tot.range, aes(x = Valeurs, fill = Portée)) +
   geom_vline(xintercept = hyper.stats[1, "Range for i"], linetype = "solid", col = "brown")+ # quantile à 2.5%
   geom_vline(xintercept = hyper.stats[3, "Range for i"], linetype = "solid", col = "brown") + # quantile à 97.5%
   labs(x = "Portée (m)", y = "Densité")
+```
 
-# Précision
+![Densitée portée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/portee_3.jpg?raw=true)
+
+```r
+# Variance
 ggplot(data = pr.hyper.tot.precision, aes(x = Valeurs, fill = Précision)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
   geom_vline(xintercept = hyper.stats[2, "Stdev for i"], linetype = "dashed", color = "black")+
   geom_vline(xintercept = hyper.stats[1, "Stdev for i"], linetype = "solid", col = "brown")+
   geom_vline(xintercept = hyper.stats[3, "Stdev for i"], linetype = "solid", col = "brown")+
-  labs(x = "Ecart_type", y = "Densité")
+  labs(x = "Variance", y = "Densité")
 ```
+
+![Densité variance](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/variance_3.jpg?raw=true)
+
 ### Calcul des probabilités a posteriori des hyperparamètres
 
 Il est possible de vérifier les lois a priori des hyperparamètres :
