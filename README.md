@@ -57,7 +57,7 @@ Détenir les limites spatiales du domaine d'étude.
 
 ### Les zones de prospection
 
-Si elles ne recouvrent pas l'entiereté du domaine d'étude, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
+Si elles ne recouvrent pas l'entiereté du domaine, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
 
 ### Les covariables environnementales
 
