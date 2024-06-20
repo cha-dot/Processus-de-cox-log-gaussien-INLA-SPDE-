@@ -21,9 +21,9 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Formule du modèle](#formule-du-modèle)
   - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
-  - [Courbes de densité a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
+  - [Courbes de densité a posteriori des effets fixes](#courbes-de-densité-a-posteriori-des-effets-fixes)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
-  - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
+  - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densité-a-posteriori-des-hyperparamètres)
   - [Calcul des probabilités a posteriori des hyperparamètres](#calcul-des-probabilités-a-posteriori-des-hyperparamètres)
 
 
