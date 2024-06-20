@@ -357,7 +357,7 @@ summary(ppVIV)
 
 ### Représentation spatiale des prédictions
 
-Afin de représenter spatialement les prédictions, il est nécessaire de créer une grille de pixels qui couvre la mesh. Un projecteur projettera donc les résultats du modèle ajusté sur la grille de pixels définie.
+Afin de représenter spatialement les prédictions, il est nécessaire de créer une grille de pixels qui couvre la mesh (et donc le site d'étude). Un projecteur projettera donc les résultats du modèle sur la grille de pixels définie.
 
 ```r
 toto = extent(contour_sp) # étendue totale des limites de la réserve (coordonnées minimales et maximales en x et y)
@@ -394,6 +394,7 @@ On peut à présent représenter les prédictions spatiales (des prédicteurs li
 Wmean <- inla.mesh.project(projgrid, apply(predtot,2,sum)) # projette spatialement les valeurs des prédicteurs linéaires
 ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=Wmean))+gg(GB_PE_eau_fauche_LAMB,size=0.5)
 ```
+
 Nous allons à présent représenter spatialement les densités prédites des individus de l'espèce. Nous récupérons toutes les prédictions de l'intensité (nombre d'individus moyen par unité de surface).
 
 ```r
