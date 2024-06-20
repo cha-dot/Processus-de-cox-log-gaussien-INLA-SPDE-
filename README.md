@@ -103,6 +103,8 @@ lines(rbind(bndint$loc, bndint$loc[1,]), pch = 19, cex = .05, col = "orange",
 plot(contour_sp, add = T, border = 4)
 ```
 
+![Limites du domaine](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/limites_complet.jpeg?raw=true)
+
 Le domaine est étendu afin de limiter les effets de bord. La triangulation est réalisée à partir des points tirés régulièrement dans l'espace.
 
 ```r
