@@ -128,7 +128,8 @@ Nous faisons passer la mesh par les observations (les observations constituent d
 ### Paramétrage de la matrice de Matérn
 
 Les champs gaussiens suivent une loi normale multivariée d'espérance nulle et de fonction de variance-covariance, une matrice de type Matérn. Ce type de matrice est flexible et paramétrique permettant de modéliser efficacement la structure de dépendance spatiale entre les observations (supposant notamment que l'autocorrélation  spatiale entre les points diminue avec la distance).<br>
-Le champ spatial est caractérise par 3 hyperparamètres :
+
+Le champ spatial est caractérisé par 3 hyperparamètres :
 - La rugosité, fixée à 2
 - La variance dont la loi a priori repose sur un PC-prior
 - La portée, correspondant à la distance à partir de laquelle les points ne sont plus significativement autocorrélés. La valeur de la portée dans les paramètres est choisie empiriquement : elle correspond approximativement à une distance qui est 3 fois inférieure à la distance entre les 2 points les plus éloignés du domaine.
