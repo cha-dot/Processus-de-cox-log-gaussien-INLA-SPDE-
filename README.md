@@ -121,7 +121,7 @@ plot(GB_PE_eau_fauche_LAMB, add = T, col = 2, pch = 16, cex = .3)
 plot(contour_sp, add = T, border = 1, lwd = 2)
 ```
 
-![Triangulation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/mesh_simple.jpeg?raw=true)
+![Triangulation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/mesh_complet.jpeg?raw=true)
 
 Nous faisons passer la mesh par les observations (les observations constituent donc des sommets de triangles). Cela permet de détenir des informations précises puisque les données à l'intérieur des triangles seront interpolées.
 
