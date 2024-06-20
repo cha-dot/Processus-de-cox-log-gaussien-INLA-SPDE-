@@ -6,7 +6,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
 - [Installation des packages](#installation-des-packages)
 - [Données](#données)
   - [Les observations](#les-observations)
-  - [Le domaine d'étude](#le-domaine-detude)
+  - [Le domaine d'étude](#le-domaine-détude)
   - [Les zones de prospections](#les-zones-de-prospection)
   - [Les covariables environnementales](#les-covariables-environnementales)
 - [Modèle](#modèle)
@@ -15,15 +15,15 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Paramétrage de la matrice de Matérn](#paramétrage-de-la-matrice-de-matérn)
   - [Cellules de Voronoi](#cellules-de-voronoi)
   - [Vecteurs des observations et de pondération](#vecteurs-des-observations-et-de-pondération)
-  - [Matrice d'observation A](#matrice-dobservation-A)
+  - [Matrice d'observation A](#matrice-dobservation-a)
   - [Covariables environnementales](#covariables-environnementales)
   - [Stack INLA](#stack-inla)
   - [Formule du modèle](#formule-du-modèle)
   - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
-  - [Courbes de densité a posteriori des effets fixes](#courbes-de-densités-a-posteriori-des-effets-fixes)
+  - [Courbes de densité a posteriori des effets fixes](#courbes-de-densité-a-posteriori-des-effets-fixes)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
-  - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densités-a-posteriori-des-hyperparamètres)
+  - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densité-a-posteriori-des-hyperparamètres)
   - [Calcul des probabilités a posteriori des hyperparamètres](#calcul-des-probabilités-a-posteriori-des-hyperparamètres)
 
 
@@ -55,16 +55,18 @@ Télécharger les fonctions pour ce code : `source("inlabookfunctions.R")`
 
 Détenir les limites spatiales du domaine d'étude.
 
-### Les zones de prospection (si elles ne recouvrent pas l'entiereté du domaine d'étude)
+### Les zones de prospection
 
-Détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
+Si elles ne recouvrent pas l'entiereté du domaine d'étude, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
 
-### Les covariables environnementales (facultatives)
+### Les covariables environnementales
 
 Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
 Pour des variables temporelles, détenir des tableaux avec les valeurs par année (lignes) et par période de prospection (colonnes).
 
 Il est possible d'avoir les données sous un autre format mais cela nécessitera de retravailler les fonctions qui appellent les valeurs des covariables.
+
+L'ajout de covariables environnementales est facultatif.
 
 ## Modèle
 
@@ -170,7 +172,7 @@ La matrice d'observation A permet de faire le lien entre la mesh, les observatio
 <a id="matrice-a"></a>
 ![Matrice d'observation A](https://private-user-images.githubusercontent.com/173138382/340686454-5abee3ed-33f9-40f9-b746-c7e22400fb3e.PNG?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTg3MTY0NjIsIm5iZiI6MTcxODcxNjE2MiwicGF0aCI6Ii8xNzMxMzgzODIvMzQwNjg2NDU0LTVhYmVlM2VkLTMzZjktNDBmOS1iNzQ2LWM3ZTIyNDAwZmIzZS5QTkc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNjE4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDYxOFQxMzA5MjJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kZjcyOGEyMjM4OTIxYzc3NzAzMDYzZTgwYmZkMzlhZjI2ZTkzYjE1ODZmOGJjM2I2OTE5OGQ3MjRlNTQ5MTQ0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.ekKicQE8Z83QZ2M8rMqB-0TWtb1cFpvi4YmUFmLjgsw)
 
-### Vecteur des observations et de pondération
+### Vecteurs des observations et de pondération
 
 Le vecteur y.pp est composé de 0 et de 1, c'est le vecteur des observations. Le vecteur e.pp est composé des poids pour chacune des cellules de voronoi (c'est-à-dire la surface d'intersection entre les surfaces prospectées et les cellules de voronoi).
 
