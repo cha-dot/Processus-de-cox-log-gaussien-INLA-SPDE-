@@ -391,6 +391,9 @@ On peut à présent représenter les prédictions spatiales (des prédicteurs li
 Wmean <- inla.mesh.project(projgrid, apply(predtot,2,sum)) # projette spatialement les valeurs des prédicteurs linéaires
 ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=Wmean))+gg(GB_PE_eau_fauche_LAMB,size=0.5)
 ```
+
+![Prédicteurs linéaires](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/predicteurs_lineaires.jpg?raw=true)
+
 Nous allons à présent représenter spatialement les densités prédites des individus de l'espèce. Nous récupérons toutes les prédictions de l'intensité (nombre d'individus moyen par unité de surface).
 
 ```r
