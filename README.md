@@ -132,7 +132,7 @@ Les champs gaussiens suivent une loi normale multivariée d'espérance nulle et 
 Le champ spatial est caractérisé par 3 hyperparamètres :
 - La rugosité, fixée à 2
 - La variance dont la loi a priori repose sur un PC-prior
-- La portée, correspondant à la distance à partir de laquelle les points ne sont plus significativement autocorrélés. La valeur de la portée dans les paramètres est choisie empiriquement : elle correspond approximativement à une distance qui est 3 fois inférieure à la distance entre les 2 points les plus éloignés du domaine.
+- La portée correspond à la distance à partir de laquelle les points ne sont plus significativement autocorrélés. La valeur de la portée dans les paramètres est choisie empiriquement : elle correspond approximativement à une distance qui est 3 fois inférieure à la distance entre les 2 points les plus éloignés du domaine.
 
 ```r
 matern = inla.spde2.pcmatern(mesh,
