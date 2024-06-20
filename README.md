@@ -340,7 +340,7 @@ stk.pp <- inla.stack(
 ### Formule du modèle
 
 Le modèle est composé d'effets fixes (les covariables environnementales) et d'un effet aléatoire (le champ spatial gaussien).<br>
-Une première stratégie était de retirer l'intercept du modèle. Celui-ci serait donc compris dans chacune des modalités de la végétation (et non confondu avec l'effet de la première modalité), permettant la comparaison de chaque effet.
+Une première stratégie était de retirer l'intercept du modèle. Celui-ci serait donc compris dans chacune des modalités de la végétation (et pas uniquement confondu avec l'effet de la première modalité), permettant la comparaison de chaque effet.
 Mais pour contourner des problèmes de corrélation entre les lois a posteriori des modalités de la variable "végétation", cette dernière est ajoutée comme une variable aléatoire au modèle en contraignant la somme des paramètres à 0 `constr = T`.
 
 ```r
