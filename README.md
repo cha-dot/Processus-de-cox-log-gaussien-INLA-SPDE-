@@ -167,7 +167,7 @@ plot(GB_PE_eau_fauche_LAMB,pch=16,cex=0.6,col=2,add=T)
 
 ![Cellules de voronoi](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/voronoi_complet.jpeg?raw=true)
 
-Nous allons maitenant élaborer les vecteurs d'observations, de pondération, des covariables, ainsi que la matrice d'observation A. Cette dernière permet notamment de faire le lien entre la mesh, les observations et les covariables. Se référer à l'image ci-dessous pour une meilleure compréhension de la conception des différentes parties.
+Nous allons maitenant élaborer les vecteurs d'observations, de pondération, des covariables, ainsi que la matrice d'observation A. Cette dernière permet notamment de faire le lien entre la mesh, les observations et les variables environnementales. Se référer à l'image ci-dessous pour une meilleure compréhension de la conception des différentes parties.
 
 <a id="matrice-a"></a>
 ![Matrice d'observation A](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/matrice%20a%20compl%C3%A8te.PNG?raw=true)
