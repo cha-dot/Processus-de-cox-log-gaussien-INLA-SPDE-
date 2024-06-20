@@ -48,7 +48,7 @@ Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions
 
 - **Colonnes :**
   - Coordonnées spatiales
-  - Autres variables : année, numéro de passage (possibilité d'en mettre d'autres)
+  - Autres variables : année, numéro de passage (possibilité d'en ajouter)
 
 
 ### Le domaine d'étude
