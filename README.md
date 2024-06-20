@@ -107,7 +107,7 @@ plot(contour_sp, add = T, border = 4)
 Le domaine est étendu afin de limiter les effets de bord. La triangulation est réalisée à partir des points tirés régulièrement dans l'espace.
 
 ```r
-mesh = inla.mesh.2d(loc = rbind(coordinates(GB_PE_eau_fauche_LAMB)), # contrainte = faire passer la mesh par les observations
+mesh = inla.mesh.2d(loc = rbind(coordinates(GB_PE_eau_fauche_LAMB)), # contrainte (loc) = faire passer la mesh par les observations
                     boundary = list(int = bndint, out = bndext), # limites int et ext
                     max.edge = c(110, 1000), cutoff = 40, # taille des arrêtes des triangles, max. 110 dans limite int et max. 1000 dans limite ext ; min. 40
                     crs = "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 
