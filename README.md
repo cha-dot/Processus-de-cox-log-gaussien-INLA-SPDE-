@@ -485,21 +485,21 @@ L'estimation bayésienne des paramètres permet d'analyser leur distribution a p
 Nrep=2000 # nombre d'échantillons
 pr.int.tot <- inla.posterior.sample(Nrep,ppVIV) # échantillonnage dans le modèle
 ind=grep("veg",rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui ont les paramètres vg
-m = grep("max_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui ont les paramètres max_sub
-d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui ont les paramètres duree_sub
+m = grep("max_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui a le paramètre max_sub
+d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent)) # lignes de la composante latente qui a le paramètre duree_sub
 post=matrix(unlist(lapply(pr.int.tot,function(x){x$latent[c(ind,m,d),]})),nrow=Nrep,byrow=T) # Nrep valeurs des paramètres pour chaque variable
 post = as.data.frame(post)
 colnames(post) = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches", "intensite_sub", "duree_sub")
 ```
 
-Les paramètres de chaque variable sont convertis à un format compatible avec la package `ggplot`. Afin d'afficher les intervalles de crédibilité sur les graphes, nous allons récupérer les valeurs des paramètres pour les quantiles à 2.5% et 97.5%.
+Les paramètres de chaque variable sont convertis à un format compatible avec des représentations de type `ggplot`. Afin d'afficher les intervalles de crédibilité sur les graphes, nous allons récupérer les valeurs des paramètres pour les quantiles à 2.5% et 97.5%.
 
 ```r
 post_veg <- pivot_longer(post, cols = 1:7, names_to = "Variables", values_to = "Valeur") # format ggplot
 post_duree = pivot_longer(post, cols = 9, names_to = "Variables", values_to = "Valeur")
 post_max = pivot_longer(post, cols = 8, names_to = "Variables", values_to = "Valeur")
 
-post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres de chaque quantile pour chaque variable
+post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres des quantiles de chaque variable
 post.stat.veg = post.stat[,1:7] # paramètres veg
 post.stat.duree = post.stat[,9] # paramètre duree_sub
 post.stat.max = post.stat[,8] # paramètre max_sub
@@ -552,7 +552,7 @@ Une autre représentation peut s'avérer plus lisible pour l'affichage d'un gran
 ```r
 post.stat.veg.gg <- data.frame(
   Variables = 1:ncol(post.stat.veg),
-  Mediane = post.stat.veg[2, ],
+  Mediane = post.stat.veg[2, ], # médiane
   Lower_CI = post.stat.veg[1, ], # quantile à 2.5%
   Upper_CI = post.stat.veg[3, ] # quantile à 97.5%
 )
@@ -570,6 +570,8 @@ ggplot(post.stat.veg.gg, aes(x = Variables)) +
 
 ### Calcul des probabilités a posteriori
 
+Voici quelques exemples de calculs des probabilités a posteriori :
+
 ```r
 sum(post[,4]>post[,3])/Nrep # proba que le paramètre de la veg non fauchée > fauchée
 sum(post[,9]<0)/Nrep # proba que la duree_sub < 0
@@ -578,13 +580,13 @@ sum(post[,8]>0)/Nrep # proba que max_sub > 0
 
 ### Courbes de densité a posteriori des hyperparamètres
 
-Il peut être intéressant d'explorer les lois a posteriori des hyperparamètres, c'est-à-dire de la variance et de la portée. Pour cela, on échantillonne les hyperparamètres dans le modèle.
+Il peut être intéressant d'explorer les lois a posteriori des hyperparamètres (variance et portée). Pour cela, on échantillonne les hyperparamètres dans le modèle.
 
 ```r
 pr.hyper.tot = inla.hyperpar.sample(Nrep, ppVIV) # échantillonnage
 pr.hyper.tot.df = as.data.frame(pr.hyper.tot)
 pr.hyper.tot.range = pivot_longer(pr.hyper.tot.df, cols = 1, names_to = "Portée",values_to = "Valeurs") # format ggplot
-pr.hyper.tot.precision = pivot_longer(pr.hyper.tot.df, cols = 2, names_to = "Précision",values_to = "Valeurs")
+pr.hyper.tot.variance = pivot_longer(pr.hyper.tot.df, cols = 2, names_to = "Variance",values_to = "Valeurs")
 hyper.stats = apply(pr.hyper.tot.df, 2, quantile, probs = c(0.025, 0.5, 0.975)) # quantiles des hyperparamètres
 
 # Portée
@@ -600,7 +602,7 @@ ggplot(data = pr.hyper.tot.range, aes(x = Valeurs, fill = Portée)) +
 
 ```r
 # Variance
-ggplot(data = pr.hyper.tot.precision, aes(x = Valeurs, fill = Précision)) +
+ggplot(data = pr.hyper.tot.variance, aes(x = Valeurs, fill = Variance)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
   geom_vline(xintercept = hyper.stats[2, "Stdev for i"], linetype = "dashed", color = "black")+
   geom_vline(xintercept = hyper.stats[1, "Stdev for i"], linetype = "solid", col = "brown")+
@@ -612,7 +614,7 @@ ggplot(data = pr.hyper.tot.precision, aes(x = Valeurs, fill = Précision)) +
 
 ### Calcul des probabilités a posteriori des hyperparamètres
 
-Il est possible de vérifier les lois a priori des hyperparamètres :
+Il est possible de vérifier les lois a priori des hyperparamètres, que nous avons défini lors du paramétrage de la Matérn :
 
 ```r
 sum(pr.hyper.tot[,2]>1)/Nrep # variance
