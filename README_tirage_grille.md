@@ -20,6 +20,8 @@ Représentons cette grille.
    geom_sf(data = Buffer, alpha = 0.5, color = "red")
 ```
 
+![Grille complète](https://raw.githubusercontent.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/1c8361e0e5c9624d670f4f9609ccf18d63acce59/tirage_regulier_diapo.svg)
+
 Pour limiter les chevauchements de buffers sur des cellules adjacentes, les buffers seront sélectionnés à partir de leur centroïde. Leur centroïde sont ainsi conservés dans l'objet `Buffer_centroids`.
 
 ```r
@@ -76,6 +78,8 @@ Nous pouvons représenter les buffers restant :
      geom_sf(data = grille_sf, fill = NA, color = "black") +
      geom_sf(data = Buffer_reduit, alpha = 0.5, color = "red")
 ```
+
+![Grille incomplète](https://raw.githubusercontent.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/62253bf9fd400cf4a617092d9d79c5bda22c3131/tirage_regulier_diapo_1800.svg)
 
 ## Modèle
 
