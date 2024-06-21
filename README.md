@@ -485,6 +485,10 @@ abline(a=0,b=1,col=4,lwd=2,lty=2) # graphe pour voir l'ajustement des pred
 
 L'AUC (Area Under the Curve), l'aire sous la courbe ROC (Receiver Operating Characteristic), est une métrique permettant d'évaluer la qualité d'ajustement d'un modèle. Cela repose sur la comparaison de paires de données (observations/prédictions). Il nous faut transformer les observations en données de présence/absence (données binaires), et les prédictions en probabilité de présence (données continues).
 
+La probabilité de présence dans une petite région autour de x peut être approximé par l'équation :
+
+![Proba de présence](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/equation.PNG?raw=true)
+
 ```r
 NobsVIV_bis = as.numeric(NobsVIV > 0) # les pixels où il y a présence (observations)
 predTEST = 1-exp(-as.numeric(fitval*st_area(rSF))) # estimation de la probabilité de présence
