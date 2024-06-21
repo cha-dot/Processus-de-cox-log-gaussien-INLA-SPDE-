@@ -454,6 +454,8 @@ fitval = inla.mesh.project(projgrid,
 Pour représenter la densité des individus, nous multiplions l'intensité par la surface du domaine.
 
 ```r
+r = as(pxl, "SpatialPolygonsDataFrame") # conversion du format des pixels
+rSF=st_as_sf(r) # idem
 ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=fitval*as.numeric(st_area(rSF)))) + scale_fill_viridis(option = "H") + labs(fill = "Nombre d'individus/pixel") # espérance du nb de pts
 ```
 
@@ -464,8 +466,6 @@ ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=fitval*as.numeric(st_area(r
 Afin d'évaluer la qualité d'ajustement du modèle, nous stockons les observations/pixel dans un vecteur.
 
 ```r
-r = as(pxl, "SpatialPolygonsDataFrame") # conversion du format
-rSF=st_as_sf(r) # idem
 datvivSF = st_as_sf(GB_PE_eau_fauche_LAMB) # idem
 st_crs(rSF) = st_crs(datvivSF) # homogénéisation des crs
 test=st_intersects(rSF,datvivSF) # intersection entre les observations et chaque pixel
