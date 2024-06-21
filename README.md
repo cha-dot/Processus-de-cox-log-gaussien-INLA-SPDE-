@@ -26,6 +26,9 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
     - [AUC](#auc)
   - [Courbes de densité a posteriori des effets fixes](#courbes-de-densité-a-posteriori-des-effets-fixes)
+    - [Végétation a posteriori](#végétation-a-posteriori)
+    - [Durée de submersion a posteriori](#durée-de-submersion-a-posteriori)
+    - [Intensité de submersion a posteriori](#intensité-de-submersion-a-posteriori)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
   - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densité-a-posteriori-des-hyperparamètres)
   - [Calcul des probabilités a posteriori des hyperparamètres](#calcul-des-probabilités-a-posteriori-des-hyperparamètres)
@@ -520,8 +523,9 @@ post.stat.max = post.stat[,8] # paramètre max_sub
 
 Passons à la représentation graphique de ces densités a posteriori.
 
+#### Végétation a posteriori
+
 ```r
-# Végétation
 ggplot(data = post_veg, aes(x = Valeur, color = Variables)) +
   geom_density(adjust = 1.5, fill = "transparent", size = 0.7) +
   labs(x = "estimation du paramètre", y = "densité")+
@@ -529,36 +533,6 @@ ggplot(data = post_veg, aes(x = Valeur, color = Variables)) +
 ```
 
 ![Densités végétation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/densite_veg.jpg?raw=true)
-
-```r
-# Durée de submersion
-ggplot(data = post_duree, aes(x = Valeur, fill = Variables)) +
-  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") + # alpha = transparence
-  geom_vline(aes(xintercept = post.stat[2, "duree_sub"], color = "Ligne 1"), linetype = "dotdash") + # médiane
-  geom_vline(aes(xintercept = post.stat[1, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 2.5%
-  geom_vline(aes(xintercept = post.stat[3, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 97.5%
-  scale_color_manual(values = c("black", "brown"), 
-                     labels = c("Médiane", "Intervalle de crédibilité à 95%")) +
-  theme_ipsum() +
-  labs(x = "estimation du paramètre", fill = "Variable", color = "Légendes")
-```
-
-[Densité durée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/densite_duree.jpg?raw=true)
-
-```r
-# Max
-ggplot(data = post_max, aes(x = Valeur, fill = Variables)) +
-  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
-  geom_vline(aes(xintercept = post.stat[2, "intensite_sub"],color = "Ligne 1"), linetype = "dotdash")+ # médiane
-  geom_vline(aes(xintercept = post.stat[1, "intensite_sub"],color = "Ligne 2"), linetype = "solid")+ # quantile à 2.5%
-  geom_vline(aes(xintercept = post.stat[3, "intensite_sub"], color = "Ligne 2"), linetype = "solid")+ # quantile à 97.5%
-  scale_color_manual(values = c("black", "brown"),
-                     labels = c("Médiane", "Intervalle de crédibilité à 95%"))+
-  theme_ipsum()+
-  labs(x = "estimation du paramètre", fill = "Variables", color = "Légendes")
-```
-
-![Densité max](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/max_veg.jpg?raw=true)
 
 Une autre représentation peut s'avérer plus lisible pour l'affichage d'un grand nombre de paramètres ou de modalités sur un même graphe, comme c'est le cas ici avec la variable `végétation`.
 
@@ -580,6 +554,39 @@ ggplot(post.stat.veg.gg, aes(x = Variables)) +
 ```
 
 ![A posteriori végétation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/a_posteriori_veg.jpg?raw=true)
+
+#### Durée de submersion a posteriori
+
+```r
+ggplot(data = post_duree, aes(x = Valeur, fill = Variables)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") + # alpha = transparence
+  geom_vline(aes(xintercept = post.stat[2, "duree_sub"], color = "Ligne 1"), linetype = "dotdash") + # médiane
+  geom_vline(aes(xintercept = post.stat[1, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 2.5%
+  geom_vline(aes(xintercept = post.stat[3, "duree_sub"], color = "Ligne 2"), linetype = "solid") + # quantile à 97.5%
+  scale_color_manual(values = c("black", "brown"), 
+                     labels = c("Médiane", "Intervalle de crédibilité à 95%")) +
+  theme_ipsum() +
+  labs(x = "estimation du paramètre", fill = "Variable", color = "Légendes")
+```
+
+![Densité durée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/densite_duree.jpg?raw=true)
+
+#### Intensité de submersion a posteriori
+
+```r
+ggplot(data = post_max, aes(x = Valeur, fill = Variables)) +
+  geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
+  geom_vline(aes(xintercept = post.stat[2, "intensite_sub"],color = "Ligne 1"), linetype = "dotdash")+ # médiane
+  geom_vline(aes(xintercept = post.stat[1, "intensite_sub"],color = "Ligne 2"), linetype = "solid")+ # quantile à 2.5%
+  geom_vline(aes(xintercept = post.stat[3, "intensite_sub"], color = "Ligne 2"), linetype = "solid")+ # quantile à 97.5%
+  scale_color_manual(values = c("black", "brown"),
+                     labels = c("Médiane", "Intervalle de crédibilité à 95%"))+
+  theme_ipsum()+
+  labs(x = "estimation du paramètre", fill = "Variables", color = "Légendes")
+```
+
+![Densité max](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/max_veg.jpg?raw=true)
+
 
 ### Calcul des probabilités a posteriori
 
