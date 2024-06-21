@@ -493,7 +493,7 @@ testroc # AUC
 plot.roc(NobsVIV_bis, predTEST, col="red", print.thres="best") # courbe roc
 ```
 
-
+![Courbe ROC](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/ROC.png?raw=true)
 
 ### Courbes de densité a posteriori des effets fixes
 
