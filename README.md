@@ -17,6 +17,9 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Vecteurs des observations et de pondération](#vecteurs-des-observations-et-de-pondération)
   - [Matrice d'observation A](#matrice-dobservation-a)
   - [Covariables environnementales](#covariables-environnementales)
+    - [Végétation](#végétation)
+    - [Intensité de submersion](#intensité-de-submersion)
+    - [Durée de submersion](#durée-de-submersion)
   - [Stack INLA](#stack-inla)
   - [Formule du modèle](#formule-du-modèle)
   - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
@@ -236,6 +239,9 @@ shapefiles = c("Fauche_2017_seule.shp", "Fauche_2018_seule.shp", "Fauche_2019_se
 
 eau = read.csv("Hauteurs_eau_finales.csv", header = T, stringsAsFactors = T) # tableau des hauteurs d'eau
 ```
+
+#### Végatation
+
 A présent, on détermine la fonction qui récupère la valeur de la végétation en chaque point du domaine d'étude. La fonction prend en argument les coordonnées spatiales, ainsi que les fichiers spatiaux de la fauche (pour séparer la végétation fauchée de celle qui ne l'est pas). 
 
 ```r
@@ -282,6 +288,8 @@ veg[vegTMP == 5] = 6 # friches
 veg = as.factor(veg)
 ```
 
+#### Intensité de submersion
+
 A présent, nous allons définir la fonction qui permettra d'associer les valeurs d'intensité de submersion à chaque observation. Il s'agit ici d'une variable temporelle, une même valeur sera donc associée à toutes les cellules de voronoi et toutes les observations d'une même période de prospection (voir la [Matrice d'observation A](#matrice-a)).
 
 ```r
@@ -315,6 +323,8 @@ for(i in 2018:2023) {
   }
 }
 ```
+
+#### Durée de submersion
 
 De la même manière, on définit une fonction qui attribuera une valeur de durée de submersion (variable temporelle) pour toutes les cellules de voronoi et toutes les observations.
 
