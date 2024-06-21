@@ -1,6 +1,6 @@
 # Suppression progressive de points d'écoute selon une grille
 
-Cela consiste à définir une grille sur notre domaine d'étude et à ne garder qu'un seul point d'écoute, tiré aléatoirement, par cellule.
+Cela consiste à définir une grille sur notre domaine d'étude et à ne garder qu'un seul point d'écoute par cellule, tiré aléatoirement.
 
 Nous créons une grille qui recouvre le domaine d'étude et dont chaque cellule a des dimensions spécifiées par l'objet `cellule`. Par exemple, `cellule = 200` permet de faire une grille divisée en cellules de dimensions 200x200.
 
