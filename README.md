@@ -35,7 +35,7 @@ Si vous faites face à des problèmes de compatibilité à cause de la version d
 
 [Site R-INLA Project](https://www.r-inla.org/download-install) dans la section **Version Compatibility**.
 
-Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions.R")`
+Charger les packages :
 
 ```r
 library(INLA)
@@ -51,6 +51,8 @@ library(dplyr)
 library(tidyr)
 library(pROC)
 ```
+
+Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions.R")`
 
 ## Données
 
