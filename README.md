@@ -31,6 +31,8 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
     - [Intensité de submersion a posteriori](#intensité-de-submersion-a-posteriori)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
   - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densité-a-posteriori-des-hyperparamètres)
+    - [Portée](#portée)
+    - [Variance](#variance)
   - [Calcul des probabilités a posteriori des hyperparamètres](#calcul-des-probabilités-a-posteriori-des-hyperparamètres)
 
 
@@ -608,8 +610,11 @@ pr.hyper.tot.df = as.data.frame(pr.hyper.tot)
 pr.hyper.tot.range = pivot_longer(pr.hyper.tot.df, cols = 1, names_to = "Portée",values_to = "Valeurs") # format ggplot
 pr.hyper.tot.variance = pivot_longer(pr.hyper.tot.df, cols = 2, names_to = "Variance",values_to = "Valeurs")
 hyper.stats = apply(pr.hyper.tot.df, 2, quantile, probs = c(0.025, 0.5, 0.975)) # quantiles des hyperparamètres
+```
 
-# Portée
+#### Portée
+
+```r
 ggplot(data = pr.hyper.tot.range, aes(x = Valeurs, fill = Portée)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
   geom_vline(xintercept = hyper.stats[2, "Range for i"], linetype = "dotdash", color = "black")+ # médiane
@@ -620,8 +625,9 @@ ggplot(data = pr.hyper.tot.range, aes(x = Valeurs, fill = Portée)) +
 
 ![Densitée portée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/portee_3.jpg?raw=true)
 
+#### Variance
+
 ```r
-# Variance
 ggplot(data = pr.hyper.tot.variance, aes(x = Valeurs, fill = Variance)) +
   geom_density(adjust = 1.5, alpha = 0.4, fill = "gray") +
   geom_vline(xintercept = hyper.stats[2, "Stdev for i"], linetype = "dashed", color = "black")+
