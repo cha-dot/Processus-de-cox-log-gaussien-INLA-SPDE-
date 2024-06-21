@@ -636,7 +636,7 @@ ggplot(data = pr.hyper.tot.variance, aes(x = Valeurs, fill = Variance)) +
   labs(x = "Variance", y = "Densité")
 ```
 
-![Densité variance](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/variance_3.jpg?raw=true)
+![Densité variance](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/variance_2.png?raw=true)
 
 ### Calcul des probabilités a posteriori des hyperparamètres
 
