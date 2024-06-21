@@ -240,7 +240,7 @@ shapefiles = c("Fauche_2017_seule.shp", "Fauche_2018_seule.shp", "Fauche_2019_se
 eau = read.csv("Hauteurs_eau_finales.csv", header = T, stringsAsFactors = T) # tableau des hauteurs d'eau
 ```
 
-#### Végatation
+#### Végétation
 
 A présent, on détermine la fonction qui récupère la valeur de la végétation en chaque point du domaine d'étude. La fonction prend en argument les coordonnées spatiales, ainsi que les fichiers spatiaux de la fauche (pour séparer la végétation fauchée de celle qui ne l'est pas). 
 
