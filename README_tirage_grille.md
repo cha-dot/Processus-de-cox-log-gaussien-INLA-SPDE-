@@ -227,3 +227,118 @@ Le reste du modèle en change pas (pour plus d'explications du modèle, se réf�
       eau_dureeTMP = c(eau_dureeTMP, eau_duree_I, eau_duree_A)
     }
   }
+
+##stack inla
+  stk.pp <- inla.stack(                   
+    data = list(y = y.pp, e = e.pp),
+    A = list(1, A.pp),
+    effects = list(list(veg = veg, max_sub = eau_maxTMP, duree_sub = eau_dureeTMP), #b0 = 1 (quand y a juste le champ spatial)
+                   list(i = 1:nv)),
+    tag = 'pp')
+
+ppVIV <- inla(y ~ 1 + f(i, model = matern) + max_sub + duree_sub  + f(veg, model = "iid", constr = T),
+                family = 'poisson', data = inla.stack.data(stk.pp),
+                control.predictor = list(A = inla.stack.A(stk.pp)),
+                E = inla.stack.data(stk.pp)$e,
+                control.compute=list(dic=TRUE, cpo=TRUE, config = TRUE, return.marginals.predictor=TRUE),
+                control.inla=list(strategy="simplified.laplace",int.strategy="eb"))
+
+modtest = summary(ppVIV)
+```
+
+Sauvegardons le `summary` :
+
+```r
+  length(liste)
+  chemin = "~/summaries_reg_nouveaux"
+  fichier = paste0("nouv_summary_", cel, "_nPE_", length(liste), "_rep_", repetition, ".RData")
+  nom_complet = file.path(chemin, fichier)
+  save(modtest, file = nom_complet)
+```
+
+Si le script doit être répété de nombreuses fois, il peut être judicieux de réduire le nombre de pixels dans `resopred` pour réduire les temps de calcul (ici, `resopred = 100` semble être un bon compromis entre le temps de calculs et la précision des résultats).
+
+```r
+  toto = extent(contour_sp)
+  xrange = toto[2]-toto[1]
+  yrange = toto[4]-toto[3]
+  resopred=100
+  st_crs(contour) = NA
+  inla.identical.CRS(mesh, contour)
+  contour = st_set_crs(contour, inla.CRS(mesh))
+  pxl <- pixels(mesh, mask=contour, nx = resopred,
+                ny = round(resopred*yrange/xrange))
+  projgrid <- inla.mesh.projector(mesh, coordinates(pxl))
+
+  indN = 0
+  indNV = 1
+  predtot = NULL
+  for(i in 1:6){
+    for(j in 1:2){
+      predtot = rbind(predtot, ppVIV$summary.fitted.values$'0.5quant'[((indNV-1)*nv+indN+1):(indNV*nv+indN)])
+      indN = indN + n[i,j]
+      indNV = indNV + 1
+      
+    }
+  }
+  
+  r = as(pxl, "SpatialPolygonsDataFrame")
+  rSF=st_as_sf(r)
+  datvivSF = st_as_sf(GB_PE_eau_fauche_LAMB)
+  st_crs(rSF) = st_crs(datvivSF)
+  test=st_intersects(rSF,datvivSF)
+  NobsVIV=unlist(lapply(test,length))
+  fitval = inla.mesh.project(projgrid,
+                             apply(predtot,2,sum))
+
+
+# courbe ROC
+  NobsVIV_bis = as.numeric(NobsVIV > 0) # les cellules où il y a présence
+  predTEST = 1-exp(-as.numeric(fitval*st_area(rSF)))
+  testroc=roc(NobsVIV_bis,predTEST)
+  AUC = testroc$auc
+  
+  mse <- mean((predTEST - NobsVIV)^2)
+  RMSE = sqrt(mse)
+```
+
+Sauvegardons ces 3 dernières métriques :
+
+```r
+  chemin = "~/metriques_reg_nouveaux"
+  fichier = paste0("nouv_metriques_", cel, "_nPE_", length(liste), "_rep_", repetition, ".RData")
+  nom_complet = file.path(chemin, fichier)
+  save(AUC, mse, RMSE, file = nom_complet)
+```
+
+Toujours dans l'optique de gain de temps si le code doit être répliqué de nombreuses fois, il est possible de réduire le nombre d'échantillons `Nrep` du modèle (`Nrep = 500` semble être un bon compromis entre le temps de calcul et la précision des résultats).
+
+```r
+  Nrep=500
+  pr.int.tot <- inla.posterior.sample(Nrep,ppVIV) # Nrep échantillons du modèle
+  ind=grep("veg",rownames(pr.int.tot[[1]]$latent))
+  m = grep("max_sub", rownames(pr.int.tot[[1]]$latent))
+  d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent))
+  post=matrix(unlist(lapply(pr.int.tot,function(x){x$latent[c(ind,m,d),]})),nrow=Nrep,byrow=T)
+  post = as.data.frame(post)
+  colnames(post) = c(rownames(pr.int.tot[[1]]$latent)[ind], "intensite_sub", "duree_sub")
+
+  anciens = c("veg:1", "veg:2", "veg:3", "veg:4", "veg:5", "veg:6", "veg:7")
+  nouv = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches")
+    
+  for (p in 1:length(anciens)) {
+      if (anciens[p] %in% colnames(post)) {
+        colnames(post)[colnames(post) == anciens[p]] <- nouv[p]
+      }
+    }
+    
+  post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres pour chaque quantile de chaque variable
+  post.stat.veg = post.stat[, which(colnames(post) %in% nouv)]
+  post.stat.duree = post.stat[, "duree_sub"]
+  post.stat.max = post.stat[, "intensite_sub"]
+  
+  chemin = "~/post_reg_nouveaux"
+  fichier = paste0("reg_post_", cel, "_nPE_", length(liste), "_rep_", repetition, ".RData")
+  nom_complet = file.path(chemin, fichier)
+  save(post.stat.veg, post.stat.duree, post.stat.max, file = nom_complet)
+```
