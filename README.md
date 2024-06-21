@@ -37,6 +37,21 @@ Si vous faites face à des problèmes de compatibilité à cause de la version d
 
 Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions.R")`
 
+```r
+library(INLA)
+library(inlabru)
+library(ggplot2)
+library(raster)
+library(sf)
+library(sp)
+library(tidyverse)
+library(viridis)
+library(hrbrthemes)
+library(dplyr)
+library(tidyr)
+library(pROC)
+```
+
 ## Données
 
 ### Les observations
