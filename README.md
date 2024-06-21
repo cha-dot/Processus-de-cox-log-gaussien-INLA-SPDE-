@@ -24,6 +24,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Formule du modèle](#formule-du-modèle)
   - [Représentation spatiale des prédictions](#représentation-spatiale-des-prédictions)
   - [Qualité d'ajustement du modèle](#qualité-dajustement-du-modèle)
+    - [AUC](#auc)
   - [Courbes de densité a posteriori des effets fixes](#courbes-de-densité-a-posteriori-des-effets-fixes)
   - [Calcul des probabilités a posteriori](#calcul-des-probabilités-a-posteriori)
   - [Courbes de densité a posteriori des hyperparamètres](#courbes-de-densité-a-posteriori-des-hyperparamètres)
@@ -453,6 +454,8 @@ ggplot()+gg(as(contour, "Spatial"))+gg(pxl, aes(fill=fitval*as.numeric(st_area(r
 
 ![Carte densités individus](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/derniere_carte_dalto.jpg?raw=true)
 
+### Qualité d'ajustement du modèle
+
 Afin d'évaluer la qualité d'ajustement du modèle, nous stockons les observations/pixel dans un vecteur.
 
 ```r
@@ -473,7 +476,7 @@ abline(a=0,b=1,col=4,lwd=2,lty=2) # graphe pour voir l'ajustement des pred
 
 ![Ajustement](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/ajustement.png?raw=true)
 
-### Qualité d'ajustement du modèle
+#### AUC
 
 L'AUC (Area Under the Curve), l'aire sous la courbe ROC (Receiver Operating Characteristic), est une métrique permettant d'évaluer la qualité d'ajustement d'un modèle. Cela repose sur la comparaison de paires de données (observations/prédictions). Il nous faut transformer les observations en données de présence/absence (données binaires), et les prédictions en probabilité de présence (données continues).
 
