@@ -8,6 +8,7 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Les observations](#les-observations)
   - [Le domaine d'étude](#le-domaine-détude)
   - [Les zones de prospections](#les-zones-de-prospection)
+  - [Sauvegarde des données](#sauvegarde-des-données)
   - [Les covariables environnementales](#les-covariables-environnementales)
 - [Modèle](#modèle)
   - [Représentation des données](#représentation-des-données)
@@ -76,14 +77,60 @@ Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions
   - Coordonnées spatiales
   - Autres variables : année, numéro de passage (possibilité d'en ajouter)
 
+Il peut être nécessaire de changer le format des données, comme cela a été le cas par exemple pour nos données :
+ 
+```r
+  GB_PE_eau_fauche = read.csv("GB_PE_eau_fauche_complet.csv", header = T, stringsAsFactors = T)
+  GB_PE_eau_fauche_2 = SpatialPoints(coords = GB_PE_eau_fauche[,c("x_wgs84", "y_wgs84")]) # conversion de format
+  proj4string(GB_PE_eau_fauche_2) = CRS("+proj=longlat +datum=WGS84") # crs
+  points_lambert = spTransform(GB_PE_eau_fauche_2, CRSobj = CRS(contour_sp@proj4string@projargs)) # reprojection
+  GB_PE_eau_fauche_LAMB = SpatialPointsDataFrame(coords = coordinates(points_lambert), # conversion de format
+                                                 data = GB_PE_eau_fauche,
+                                                 proj4string = CRS(contour_sp@proj4string@projargs))
+```
+
 
 ### Le domaine d'étude
 
 Détenir les limites spatiales du domaine d'étude.
 
+Dans le cas de cette étude, une cartographie de la végétation avait été dressée sur l'ensemble de la réserve en 2015. Nous nous sommes basés sur les limites géographiques de cette cartographie pour délimiter la réserve (il s'agissait d'une alternative pratique puisque ce travail étudie entre autres l'effet de la végétation sur la distribution spatiale des gorgebleues).
+
+```r
+carto_veg = st_read("Regroupement_vg_2015.shp")
+plot(st_geometry(carto_veg))
+
+contour = st_union(st_geometry(carto_veg)) # fusionne les polygones du shape de vg (donc ne garde que les contours extérieurs)
+contour_buffer = st_buffer(contour, dist = 50) # tampon autour des contours (permet d'enlever les ruissons, moins de détails)
+contour_sp = as(contour_buffer, "Spatial") # conversion du format
+plot(contour_buffer)
+```
+
 ### Les zones de prospection
 
-Si elles ne recouvrent pas l'entiereté du domaine, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.)
+Si elles ne recouvrent pas l'entiereté du domaine, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.).
+
+Si vous ne détenez pas de fichier unique des zones de prospection mais qu'il existe une telle variable dans votre tableau des observations, il est possible de créer facilement le fichier. A titre d'illustration, dans notre tableau d'observations, il existe une colonne `Buffer` qui permet d'associer chaque individu observé à un point d'écoute. Les coordonnées spatiales étant également renseignées, nous avons pu obtenir le fichier des buffers de la façon suivante :
+
+```r
+  coord_Buffer = GB_PE_eau_fauche[, c("numero_buf","X_PE", "Y_PE")] # colonnes points d'écoute et coordonnées associées
+  coord_Buffer = coord_Buffer[!duplicated(coord_Buffer),] # permet d'avoir la liste des points d'écoute sans les doublons et leurs coordonnées
+  Buffer = SpatialPoints(coords = coord_Buffer[,c("X_PE", "Y_PE")], CRS("+proj=longlat +datum=WGS84")) # conversion de format
+  Buffer = SpatialPointsDataFrame(coords = coordinates(Buffer), data = coord_Buffer) # conversion de format
+  proj4string(Buffer) = CRS("+proj=longlat +datum=WGS84") # système de référence
+  Buffer = st_as_sf(Buffer) # conversion de format
+  Buffer = st_transform(Buffer, crs = proj4string(GB_PE_eau_fauche_LAMB)) # reprojection crs (homogénéisation)
+  Buffer = st_buffer(Buffer, 150) # (buffers à partir des points d'écoute ; 150 = nombre de traits qui forment le cercle)
+  Buffer_sp = as(Buffer, "Spatial") # conversion de format
+```
+
+### Sauvegarde des données
+
+Il est possible, voire recommander de sauvegarder les fichiers (observations, domaine d'étude et zones de prospection) dans un unique fichier R. Cela permettra de les appeler avec une seule commande pour s'affranchir du code juste au-dessus.
+
+```r
+save(GB_PE_eau_fauche_LAMB, contour_sp, Buffer_sp, file = "dataprocess.rda")
+```
 
 ### Les covariables environnementales
 
