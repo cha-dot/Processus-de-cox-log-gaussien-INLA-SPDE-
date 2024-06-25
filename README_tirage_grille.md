@@ -7,6 +7,9 @@ Cela consiste à définir une grille sur notre domaine d'étude et à ne garder 
 - [Création de la grille](#création-de-la-grille)
 - [Modification du nombre de points d'écoute](#modification-du-nombre-de-points-découte)
 - [Modèle](#modèle)
+  - [Sauvegarde du summary](#sauvegarde-du-summary)
+  - [Sauvegarde de l'AUC, du MSE et du RMSE](#sauvegarde-de-lauc*-du-mse*-et-du-rmse)
+  - [Sauvegarde des distributions a posteriori](#sauvegarde-des-distributions-a-posteriori)
 - [Représentations graphiques des résultats](#représentations-graphiques-des-résultats)
   - [AUC](#auc)
   - [RMSE](#rmse)
@@ -21,6 +24,8 @@ Cela consiste à définir une grille sur notre domaine d'étude et à ne garder 
       - [Végétation arbustive](#végétation-arbustive)
       - [Roselières/scirpaies](#roselières/scirpaies)
       - [Friches](#friches)
+
+## Création de la grille
 
 Nous créons une grille qui recouvre le domaine d'étude et dont chaque cellule a des dimensions spécifiées par l'objet `cellule`. Par exemple, `cellule = 200` permet de faire une grille divisée en cellules de dimensions 200x200.
 
@@ -41,6 +46,8 @@ Représentons cette grille.
 ```
 
 ![Grille complète](https://raw.githubusercontent.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/1c8361e0e5c9624d670f4f9609ccf18d63acce59/tirage_regulier_diapo.svg)
+
+## Modification du nombre de points d'écoute
 
 Pour limiter les chevauchements de buffers sur des cellules adjacentes, les buffers seront sélectionnés à partir de leur centroïde. Leur centroïde sont ainsi conservés dans l'objet `Buffer_centroids`.
 
@@ -270,6 +277,8 @@ ppVIV <- inla(y ~ 1 + f(i, model = matern) + max_sub + duree_sub  + f(veg, model
 modtest = summary(ppVIV)
 ```
 
+### Sauvegarde du summary
+
 Sauvegardons le `summary` :
 
 ```r
@@ -326,6 +335,8 @@ Si le script doit être répété de nombreuses fois, il peut être judicieux de
   RMSE = sqrt(mse)
 ```
 
+### Sauvegarde de l'AUC, du MSE et du RMSE
+
 Sauvegardons ces 3 dernières métriques :
 
 ```r
@@ -359,8 +370,12 @@ Toujours dans l'optique de gain de temps si le code doit être répliqué de nom
   post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres pour chaque quantile de chaque variable
   post.stat.veg = post.stat[, which(colnames(post) %in% nouv)]
   post.stat.duree = post.stat[, "duree_sub"]
-  post.stat.max = post.stat[, "intensite_sub"]
-  
+  post.stat.max = post.stat[, "intensite_sub
+```
+
+### Sauvegarde des distributions a posteriori
+
+```r  
   chemin = "~/post_reg_nouveaux"
   fichier = paste0("reg_post_", cel, "_nPE_", length(liste), "_rep_", repetition, ".RData")
   nom_complet = file.path(chemin, fichier)
