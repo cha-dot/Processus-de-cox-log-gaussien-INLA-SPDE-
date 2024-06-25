@@ -110,7 +110,7 @@ Nous pouvons représenter les buffers restant :
 
 ## Modèle
 
-Le reste du modèle en change pas (pour plus d'explications du modèle, se référer à README_INLA.md).
+Le reste du modèle ne change pas (pour plus d'explications du modèle, se référer à README_INLA.md).
 
 ```r
  tmp = spsample(contour_sp@polygons[[1]], n = 1000, type = "regular")
