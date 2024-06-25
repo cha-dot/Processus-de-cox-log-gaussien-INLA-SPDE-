@@ -8,7 +8,7 @@ Cela consiste à définir une grille sur notre domaine d'étude et à ne garder 
 - [Modification du nombre de points d'écoute](#modification-du-nombre-de-points-découte)
 - [Modèle](#modèle)
   - [Sauvegarde du summary](#sauvegarde-du-summary)
-  - [Sauvegarde de l'AUC, du MSE et du RMSE](#sauvegarde-de-lauc*-du-mse*-et-du-rmse)
+  - [Sauvegarde de l'AUC, du MSE et du RMSE](#sauvegarde-de-lauc-du-mse-et-du-rmse)
   - [Sauvegarde des distributions a posteriori](#sauvegarde-des-distributions-a-posteriori)
 - [Représentations graphiques des résultats](#représentations-graphiques-des-résultats)
   - [AUC](#auc)
