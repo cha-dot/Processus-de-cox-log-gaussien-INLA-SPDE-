@@ -351,26 +351,32 @@ Toujours dans l'optique de gain de temps si le code doit être répliqué de nom
 ```r
   Nrep=500
   pr.int.tot <- inla.posterior.sample(Nrep,ppVIV) # Nrep échantillons du modèle
-  ind=grep("veg",rownames(pr.int.tot[[1]]$latent))
-  m = grep("max_sub", rownames(pr.int.tot[[1]]$latent))
-  d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent))
-  post=matrix(unlist(lapply(pr.int.tot,function(x){x$latent[c(ind,m,d),]})),nrow=Nrep,byrow=T)
+  ind=grep("veg",rownames(pr.int.tot[[1]]$latent)) # paramètres végétation
+  m = grep("max_sub", rownames(pr.int.tot[[1]]$latent)) # paramètre intensité de submersion
+  d = grep("duree_sub", rownames(pr.int.tot[[1]]$latent)) # paramètre durée de submersion
+  post=matrix(unlist(lapply(pr.int.tot,function(x){x$latent[c(ind,m,d),]})),nrow=Nrep,byrow=T) # Nrep valeurs des paramètres pour chaque variable
   post = as.data.frame(post)
-  colnames(post) = c(rownames(pr.int.tot[[1]]$latent)[ind], "intensite_sub", "duree_sub")
+```
 
+Lors de la suppression de points d'écoute, il est possible que certaines variables ou modalités spatiales, dans notre cas, certains types de végétation, ne soient plus représentés. Aucune information sur la distribution a posteriori du paramètre ne sera alors disponible.
+
+`colnames(post) = c(rownames(pr.int.tot[[1]]$latent)[ind], "intensite_sub", "duree_sub")` à la place de `colnames(post) = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches", "intensite_sub", "duree_sub") permet de prendre en compte la possibilité d'une absence d'un type de végétation.
+
+```r
+  colnames(post) = c(rownames(pr.int.tot[[1]]$latent)[ind], "intensite_sub", "duree_sub") # nom des colonnes
   anciens = c("veg:1", "veg:2", "veg:3", "veg:4", "veg:5", "veg:6", "veg:7")
   nouv = c("cultures", "rase", "haute fauchée", "haute non fauchée", "arbustive", "roselières/scirpaies", "friches")
     
-  for (p in 1:length(anciens)) {
+  for (p in 1:length(anciens)) { # remplacer "veg:x" par les noms des types de vg
       if (anciens[p] %in% colnames(post)) {
-        colnames(post)[colnames(post) == anciens[p]] <- nouv[p]
+        colnames(post)[colnames(post) == anciens[p]] = nouv[p]
       }
     }
     
   post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres pour chaque quantile de chaque variable
-  post.stat.veg = post.stat[, which(colnames(post) %in% nouv)]
-  post.stat.duree = post.stat[, "duree_sub"]
-  post.stat.max = post.stat[, "intensite_sub
+  post.stat.veg = post.stat[, which(colnames(post) %in% nouv)] # quantiles des paramètres veg
+  post.stat.duree = post.stat[, "duree_sub"] # quantiles de la durée de submersion
+  post.stat.max = post.stat[, "intensite_sub"] # quantiles de l'intensité de submersion
 ```
 
 ### Sauvegarde des distributions a posteriori
