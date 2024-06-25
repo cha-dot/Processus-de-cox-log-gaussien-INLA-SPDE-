@@ -569,9 +569,9 @@ post_duree = pivot_longer(post, cols = 9, names_to = "Variables", values_to = "V
 post_max = pivot_longer(post, cols = 8, names_to = "Variables", values_to = "Valeur")
 
 post.stat = apply(post,2,quantile,probs=c(0.025,0.5,0.975)) # valeurs des paramètres des quantiles de chaque variable
-post.stat.veg = post.stat[,1:7] # paramètres veg
-post.stat.duree = post.stat[,9] # paramètre duree_sub
-post.stat.max = post.stat[,8] # paramètre max_sub
+post.stat.veg = post.stat[,1:7] # quantiles des paramètres veg
+post.stat.duree = post.stat[,9] # quantiles de la durée de submersion
+post.stat.max = post.stat[,8] # quantiles de l'intensité de submersion
 ```
 
 Passons à la représentation graphique de ces densités a posteriori.
