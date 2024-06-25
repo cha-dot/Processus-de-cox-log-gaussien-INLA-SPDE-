@@ -76,6 +76,8 @@ Télécharger les fonctions utilisées dans ce code : `source("inlabookfunctions
 - **Colonnes :**
   - Coordonnées spatiales
   - Autres variables : année, numéro de passage (possibilité d'en ajouter)
+ 
+![Jeu de données](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/jdd.PNG?raw=true)
 
 Il peut être nécessaire de changer le format des données, comme cela a été le cas par exemple pour nos données :
  
@@ -99,18 +101,26 @@ Dans le cas de cette étude, une cartographie de la végétation avait été dre
 ```r
 carto_veg = st_read("Regroupement_vg_2015.shp")
 plot(st_geometry(carto_veg))
+```
 
+![Cartographie de la végétation](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/carto_veg_github.jpg?raw=true)
+
+```r
 contour = st_union(st_geometry(carto_veg)) # fusionne les polygones du shape de vg (donc ne garde que les contours extérieurs)
 contour_buffer = st_buffer(contour, dist = 50) # tampon autour des contours (permet d'enlever les ruissons, moins de détails)
 contour_sp = as(contour_buffer, "Spatial") # conversion du format
 plot(contour_buffer)
 ```
 
+![Contours de la réserve](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/contour_veg_github.jpg?raw=true)
+
 ### Les zones de prospection
 
 Si elles ne recouvrent pas l'entiereté du domaine, détenir les limites spatiales des zones prospectées (ex : disques d'écoute, transects etc.).
 
 Si vous ne détenez pas de fichier unique des zones de prospection mais qu'il existe une telle variable dans votre tableau des observations, il est possible de créer facilement le fichier. A titre d'illustration, dans notre tableau d'observations, il existe une colonne `Buffer` qui permet d'associer chaque individu observé à un point d'écoute. Les coordonnées spatiales étant également renseignées, nous avons pu obtenir le fichier des buffers de la façon suivante :
+
+![Jeu de données avec la colonne Buffer](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/jdd_buffers.PNG?raw=true)
 
 ```r
   coord_Buffer = GB_PE_eau_fauche[, c("numero_buf","X_PE", "Y_PE")] # colonnes points d'écoute et coordonnées associées
