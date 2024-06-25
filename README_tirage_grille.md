@@ -381,3 +381,30 @@ Toujours dans l'optique de gain de temps si le code doit être répliqué de nom
   nom_complet = file.path(chemin, fichier)
   save(post.stat.veg, post.stat.duree, post.stat.max, file = nom_complet)
 ```
+## Représentations graphiques des résultats
+
+### AUC
+
+### RMSE
+
+### Paramètres du modèle
+
+#### Intensité de submersion
+
+#### Durée de submersion
+
+#### Végétation
+
+##### Cultures
+
+##### Végétation rase
+
+##### Végétation haute fauchée
+
+##### Végétation haute non fauchée
+
+##### Végétation arbustive
+
+##### Roselières/scirpaies
+
+##### Friches
