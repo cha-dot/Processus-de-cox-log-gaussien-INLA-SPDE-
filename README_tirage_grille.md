@@ -389,7 +389,7 @@ Lors de la suppression de points d'écoute, il est possible que certaines variab
 ```
 ## Représentations graphiques des résultats
 
-Le modèle a été réalisé pour plusieurs résolutions de grille (cellules de dimensions 300x300 m² à 2500x2500 m², par pas de 100 m²). Chaque cas de figure a été répliqué 10 fois, puis le buffer relevé par cellule est échantillonné aléatoirement. Ainsi, nous ferons la moyenne des métriques pour chaque cas de figure.
+Le modèle a été réalisé pour plusieurs résolutions de grille (cellules de dimensions 300x300 m² à 2500x2500 m², par pas de 100 m²). Chaque cas de figure a été répliqué 10 fois, puisque le buffer relevé par cellule est échantillonné aléatoirement. Ainsi, nous ferons la moyenne des métriques pour chaque cas de figure.
 
 ### AUC
 
@@ -444,7 +444,7 @@ for (indice in names(all_AUC_by_combination)) { # pour chaque cas de figure
 }
 ```
 
-Passons à la représentation graphique :
+Passons à la représentation graphique. L'axe des abscisses est inversé. En effet, plus les cellules sont grandes, moins il y a de points d'écoute. Je trouvais plus cohérent de représenter les valeurs des métriques en fonction du nombre croissant de points d'écoute (permettant une comparaison plus facile avec un tirage aléatoire).
 
 ```r
 AUC_reg_final = unlist(moy_AUC) # format vecteur
@@ -454,6 +454,7 @@ colnames(AUC_reg_final) = c("cellules", "AUC") # nom des colonnes
 ggplot(AUC_reg_final, aes(x = cellules, y = AUC))+ # AUC en fonction de la résolution de la grille
   geom_line()+
   scale_y_continuous(limits = c(0,1))+ # limites de l'axe y
+  scale_x_reverse()+ # inverse le sens de l'axe x (facultatif)
   labs(x = "Taille des cellules (en m²)", y = "AUC")+ # légende
   theme_minimal()
 ```
@@ -509,13 +510,74 @@ colnames(RMSE_reg_final) = c("cellules", "RMSE") # nom des colonnes
 ggplot(RMSE_reg_final, aes(x = cellules, y = RMSE))+ # RMSE en fonction de la résolution de la grille
   geom_line()+
   scale_y_continuous(limits = c(0,1.5))+ # limites de l'axe y
+  scale_x_reverse()+ # inverse l'axe des x (facultatif)
   labs(x = "Taille des cellules (en m²)", y = "RMSE")+ # légende
   theme_minimal()
 ```
 
 ### Paramètres du modèle
 
+Concernant les paramètres du modèle, la médiane et les intervalles de crédibilité moyens de chaque cas de figure seront représentés en fonction de la résolution de la grille. La méthode utilisée pour charger les fichiers et représenter les données est similaire à celle utilisée pour l'AUC et le RMSE.
+
 #### Intensité de submersion
+
+```r
+all_max_by_combination <- list() vecteur qui stockera les intensités de submersion
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) { # pour chaque résolution de grille
+  cell <- n_cell[i] # cas de figure i (dimensions des cellules)
+  pe <- n_pe[i] # nb de points d'écoute associé au cas de figure i
+  indice <- paste(cell, pe, sep = "_") # ex : "500_69"
+  temp_quantiles_Q2.5 <- c() # stockera les quantiles 2.5%
+  temp_quantiles_Q50 <- c() # stockera les médianes 
+  temp_quantiles_Q97.5 <- c() # stockera les quantiles 97.5%
+  
+  for (rep in seq_len(n_rep)) { # pour chaque réplicat (x 10)
+    filename <- generate_filename(cell, pe, rep) # charge le fichier
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.max")) {
+        # Stocker les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.max["2.5%"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.max["50%"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.max["97.5%"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) { # vérifie l'existence des quantiles
+    all_max_by_combination[[indice]] <- c( # pour chaque cas de figure
+      moy_Q2.5 = mean(temp_quantiles_Q2.5), # moyenne du quantile 2.5%
+      moy_Q50 = mean(temp_quantiles_Q50), # moyenne de la médiane
+      moy_Q97.5 = mean(temp_quantiles_Q97.5) # moyenne du quantile 97.5%
+    )
+  } else {
+    all_max_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_max_by_combination_df <- do.call(rbind, lapply(all_max_by_combination, as.data.frame))
+all_max_by_combination_df = data.frame(t(sapply(all_max_by_combination, unlist)))
+all_max_by_combination_df = cbind(all_max_by_combination_df, n_cell) # ajout de la colonne des dimensions des cellules de la grille
+# "sapply" convertit chaque élément de la liste en un vecteur et "t" transpose pour que chaque ligne corresponde à une combinaison
+rownames(all_max_by_combination_df) = NULL # suppression des noms des lignes
+
+ggplot(all_max_by_combination_df, aes(x = n_cell, y = moy_Q50))+
+  geom_line()+ # ligne pour les médianes
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+ # ruban pour les intervalles de crédibilité
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de l'intensité de submersion")+ # légende
+  scale_y_continuous(limits = c(-1,5))+ # limites de l'axe y
+  scale_x_reverse()+ # inverse le sens de l'axe x (facultatif)
+  theme_minimal()
+```
 
 #### Durée de submersion
 
