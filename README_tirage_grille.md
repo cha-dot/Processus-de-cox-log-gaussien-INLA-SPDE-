@@ -413,7 +413,7 @@ all_AUC_by_combination <- list() # vecteur qui stockera les AUC
 # Boucle pour ouvrir chaque fichier, extraire les AUC et les stocker dans la liste
 for (i in seq_along(n_cell)) { # pour chaque résolution de grille
   cell <- n_cell[i] # cas de figure i (dimensions des cellules)
-  pe <- n_pe[i] # nombre de points d'écoute associés au cas de figure i
+  pe <- n_pe[i] # nb de points d'écoute associés au cas de figure i
   indice <- paste(cell, pe, sep = "_") # ex : "500_69"
   all_AUC_by_combination[[indice]] <- list() # permettra de regrouper par cas de figure
   for (rep in seq_len(n_rep)) { # pour chaque réplicat (x 10)
@@ -444,7 +444,74 @@ for (indice in names(all_AUC_by_combination)) { # pour chaque cas de figure
 }
 ```
 
+Passons à la représentation graphique :
+
+```r
+AUC_reg_final = unlist(moy_AUC) # format vecteur
+AUC_reg_final = as.data.frame(cbind(n_cell, AUC_reg_final)) # tableau des AUC moyennes pour chaque résolution de grille
+colnames(AUC_reg_final) = c("cellules", "AUC") # nom des colonnes
+
+ggplot(AUC_reg_final, aes(x = cellules, y = AUC))+ # AUC en fonction de la résolution de la grille
+  geom_line()+
+  scale_y_continuous(limits = c(0,1))+ # limites de l'axe y
+  labs(x = "Taille des cellules (en m²)", y = "AUC")+ # légende
+  theme_minimal()
+```
+
 ### RMSE
+
+Le RMSE est une métrique utile pour comparer des modèles entre eux (plus il est faible, meilleur est le modèle). Nous procédons exactement de la même manière que l'AUC pour sa représentation graphique :
+
+```r
+all_RMSE_by_combination <- list() # vecteur qui stockera les RMSE
+
+# Boucle pour ouvrir chaque fichier, extraire les AUC et les stocker dans la liste
+for (i in seq_along(n_cell)) { # pour chaque résolution de grille
+  cell <- n_cell[i] # cas de figure i (dimensions des cellules)
+  pe <- n_pe[i] # nb de points d'écoute associé au cas de figure i
+  indice <- paste(cell, pe, sep = "_") # ex : "500_69"
+  all_RMSE_by_combination[[indice]] <- list() # permettra de regrouper par cas de figure
+  for (rep in seq_len(n_rep)) { # pour chaque réplicat (x 10)
+    filename <- generate_filename(cell, pe, rep) # charge le fichier
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence de la variable 'RMSE'
+      if (exists("RMSE")) {
+        all_RMSE_by_combination[[indice]] <- c(all_RMSE_by_combination[[indice]], RMSE) # stocke le RMSE
+      } else {
+        warning(sprintf("La variable 'RMSE' n'existe pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+}
+
+# Initialiser une liste pour stocker les moyennes des RMSE
+moy_RMSE <- list()
+
+for (indice in names(all_RMSE_by_combination)) { # pour chaque cas de figure
+  if (length(all_RMSE_by_combination[[indice]]) > 0) { # vérifier l'existence de la valeur
+    moy_RMSE[[indice]] <- mean(unlist(all_RMSE_by_combination[[indice]])) # moyenne RMSE
+  } else {
+    moy_RMSE[[indice]] <- NA
+  }
+}
+```
+
+Passons à la représentation graphique :
+
+```r
+RMSE_reg_final = unlist(moy_RMSE) # format vecteur
+RMSE_reg_final = as.data.frame(cbind(n_cell, RMSE_reg_final)) # tableau des RMSE moyens pour chaque résolution de grille
+colnames(RMSE_reg_final) = c("cellules", "RMSE") # nom des colonnes
+
+ggplot(RMSE_reg_final, aes(x = cellules, y = RMSE))+ # RMSE en fonction de la résolution de la grille
+  geom_line()+
+  scale_y_continuous(limits = c(0,1.5))+ # limites de l'axe y
+  labs(x = "Taille des cellules (en m²)", y = "RMSE")+ # légende
+  theme_minimal()
+```
 
 ### Paramètres du modèle
 
