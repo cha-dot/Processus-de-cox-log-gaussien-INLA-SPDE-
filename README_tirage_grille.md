@@ -389,7 +389,60 @@ Lors de la suppression de points d'écoute, il est possible que certaines variab
 ```
 ## Représentations graphiques des résultats
 
+Le modèle a été réalisé pour plusieurs résolutions de grille (cellules de dimensions 300x300 m² à 2500x2500 m², par pas de 100 m²). Chaque cas de figure a été répliqué 10 fois, puis le buffer relevé par cellule est échantillonné aléatoirement. Ainsi, nous ferons la moyenne des métriques pour chaque cas de figure.
+
 ### AUC
+
+Les commandes qui permettront de charger les bons fichiers :
+
+```r
+n_cell = seq(500, 2500, by = 100) # résolution de la grille
+n_pe = c(69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12) # nb de points d'écoute (dans le nom des fichiers)
+n_rep = 10 # nb de réplicats
+
+generate_filename <- function(n_cell, n_pe, rep) { # génère le nom de fichier
+  sprintf("~/nouv_metriques_%d_nPE_%d_rep_%d.RData", n_cell, n_pe, rep)
+}
+```
+
+A présent, nous allons charger, regrouper les données d'AUC, et faire la moyenne pour chaque cas de figure :
+
+```r
+all_AUC_by_combination <- list() # vecteur qui stockera les AUC
+
+# Boucle pour ouvrir chaque fichier, extraire les AUC et les stocker dans la liste
+for (i in seq_along(n_cell)) { # pour chaque résolution de grille
+  cell <- n_cell[i] # cas de figure i (dimensions des cellules)
+  pe <- n_pe[i] # nombre de points d'écoute associés au cas de figure i
+  indice <- paste(cell, pe, sep = "_") # ex : "500_69"
+  all_AUC_by_combination[[indice]] <- list() # permettra de regrouper par cas de figure
+  for (rep in seq_len(n_rep)) { # pour chaque réplicat (x 10)
+    filename <- generate_filename(cell, pe, rep) # charge le fichier
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence de la variable 'AUC'
+      if (exists("AUC")) {
+        all_AUC_by_combination[[indice]] <- c(all_AUC_by_combination[[indice]], AUC) # stocke l'AUC
+      } else {
+        warning(sprintf("La variable 'AUC' n'existe pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+}
+
+# Initialiser une liste pour stocker les moyennes des AUCs
+moy_AUC <- list()
+
+for (indice in names(all_AUC_by_combination)) { # pour chaque cas de figure
+  if (length(all_AUC_by_combination[[indice]]) > 0) { # vérifie l'existence de la valeur
+    moy_AUC[[indice]] <- mean(unlist(all_AUC_by_combination[[indice]])) # moyenne AUC
+  } else {
+    moy_AUC[[indice]] <- NA
+  }
+}
+```
 
 ### RMSE
 
