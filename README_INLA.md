@@ -126,7 +126,7 @@ Si vous ne détenez pas de fichier unique des zones de prospection mais qu'il ex
 
 ### Sauvegarde des données
 
-Il est possible, voire recommander de sauvegarder les fichiers (observations, domaine d'étude et zones de prospection) dans un unique fichier R. Cela permettra de les appeler avec une seule commande et de s'affranchir du code juste au-dessus.
+Il est possible, voire recommander de sauvegarder les fichiers (observations, domaine d'étude et zones de prospection) dans un unique fichier R. Cela permettra de les appeler avec une seule commande et de s'affranchir du code au-dessus.
 
 ```r
 save(GB_PE_eau_fauche_LAMB, contour_sp, Buffer_sp, file = "dataprocess.rda")
