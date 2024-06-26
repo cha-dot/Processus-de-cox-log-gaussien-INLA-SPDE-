@@ -444,7 +444,7 @@ for (indice in names(all_AUC_by_combination)) { # pour chaque cas de figure
 }
 ```
 
-Passons à la représentation graphique. L'axe des abscisses est inversé. En effet, plus les cellules sont grandes, moins il y a de points d'écoute. Je trouvais plus cohérent de représenter les valeurs des métriques en fonction du nombre croissant de points d'écoute (permettant une comparaison plus facile avec un tirage aléatoire).
+Passons à la représentation graphique. L'axe des abscisses est inversé. En effet, plus les cellules sont grandes, moins il y a de points d'écoute. Je trouvais plus cohérent de représenter les valeurs des métriques en fonction du nombre croissant de points d'écoute (permettant une comparaison plus facile avec le tirage aléatoire).
 
 ```r
 AUC_reg_final = unlist(moy_AUC) # format vecteur
@@ -533,9 +533,25 @@ ggplot(RMSE_reg_final, aes(x = cellules, y = RMSE))+ # RMSE en fonction de la r�
 
 ### Paramètres du modèle
 
-Concernant les paramètres du modèle, la médiane et les intervalles de crédibilité moyens de chaque cas de figure seront représentés en fonction de la résolution de la grille. La méthode utilisée pour charger les fichiers et représenter les données est similaire à celle utilisée pour l'AUC et le RMSE.
+Concernant les paramètres du modèle, la médiane et les intervalles de crédibilité moyens de chaque cas de figure seront représentés en fonction de la résolution de la grille.
+
+Les fichiers contenant les données sur les paramètres du modèle peuvent être chargés de cette manière :
+
+```r
+n_cell = seq(300, 2500, by = 100)
+n_pe = c(92, 81, 69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12)
+n_rep = 10
+
+generate_filename <- function(n_cell, n_pe, rep) { # génère le nom de fichier
+  sprintf("C:/Users/Charlotte.Marques/OneDrive - LPO/Documents/Données/Resultats_Florian/post_reg_nouveaux/reg_post_%d_nPE_%d_rep_%d.RData", n_cell, n_pe, rep)
+}
+```
+
+La méthode utilisée pour représenter les données est similaire à celle utilisée pour l'AUC et le RMSE.
 
 #### Intensité de submersion
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_max_by_combination <- list() vecteur qui stockera les intensités de submersion
@@ -578,7 +594,11 @@ for (i in seq_along(n_cell)) { # pour chaque résolution de grille
     all_max_by_combination[[indice]] <- NA
   }
 }
+````
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_max_by_combination_df <- do.call(rbind, lapply(all_max_by_combination, as.data.frame))
 all_max_by_combination_df = data.frame(t(sapply(all_max_by_combination, unlist)))
@@ -598,6 +618,8 @@ ggplot(all_max_by_combination_df, aes(x = n_cell, y = moy_Q50))+
 ![Régulier intensité de submersion](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/max_reg_pte_final.jpg?raw=true)
 
 #### Durée de submersion
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_duree_by_combination <- list() vecteur qui stockera les durées de submersion
@@ -641,6 +663,10 @@ for (i in seq_along(n_cell)) { # pour chaque résolution de grille
   }
 }
 
+```
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_duree_by_combination_df <- do.call(rbind, lapply(all_duree_by_combination, as.data.frame))
 all_duree_by_combination_df = data.frame(t(sapply(all_duree_by_combination, unlist)))
@@ -661,21 +687,9 @@ ggplot(all_duree_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
 
 #### Végétation
 
-Les commandes qui permettront de charger les bons fichiers :
-
-```r
-n_cell = seq(300, 2500, by = 100)
-n_pe = c(92, 81, 69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12)
-n_rep = 10
-
-
-# Fonction pour générer le nom de fichier
-generate_filename <- function(n_cell, n_pe, rep) {
-  sprintf("~/post_reg_nouveaux/reg_post_%d_nPE_%d_rep_%d.RData", n_cell, n_pe, rep)
-}
-```
-
 ##### Cultures
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_cultures_by_combination <- list() # vecteur qui stockera les paramètres de la modalité "cultures"
@@ -718,7 +732,11 @@ for (i in seq_along(n_cell)) { # pour chaque résolution de grille
     all_cultures_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_cultures_by_combination_df <- do.call(rbind, lapply(all_cultures_by_combination, as.data.frame))
 all_cultures_by_combination_df = data.frame(t(sapply(all_cultures_by_combination, unlist)))
@@ -737,6 +755,8 @@ ggplot(all_cultures_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))
 ![Régulier cultures](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/cultures_reg_pte_final.jpg?raw=true)
 
 ##### Végétation rase
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_rase_by_combination <- list()
@@ -779,7 +799,11 @@ for (i in seq_along(n_cell)) {
     all_rase_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_rase_by_combination_df <- do.call(rbind, lapply(all_rase_by_combination, as.data.frame))
 all_rase_by_combination_df = data.frame(t(sapply(all_rase_by_combination, unlist)))
@@ -798,6 +822,8 @@ ggplot(all_rase_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
 ![Régulier végétation rase](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/rase_reg_pte_final.jpg?raw=true)
 
 ##### Végétation haute fauchée
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_fauchee_by_combination <- list()
@@ -840,7 +866,11 @@ for (i in seq_along(n_cell)) {
     all_fauchee_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_fauchee_by_combination_df <- do.call(rbind, lapply(all_fauchee_by_combination, as.data.frame))
 all_fauchee_by_combination_df = data.frame(t(sapply(all_fauchee_by_combination, unlist)))
@@ -859,6 +889,9 @@ ggplot(all_fauchee_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
 ![Régulier végétation haute fauchée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/fauchee_reg_pte_final.jpg?raw=true)
 
 ##### Végétation haute non fauchée
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
+
 
 ```r
 all_non_fauchee_by_combination <- list()
@@ -901,7 +934,11 @@ for (i in seq_along(n_cell)) {
     all_non_fauchee_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_non_fauchee_by_combination_df <- do.call(rbind, lapply(all_non_fauchee_by_combination, as.data.frame))
 all_non_fauchee_by_combination_df = data.frame(t(sapply(all_non_fauchee_by_combination, unlist)))
@@ -920,6 +957,8 @@ ggplot(all_non_fauchee_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q5
 ![Régulier végétation haute non fauchée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/non_fauchee_reg_pte_final.jpg?raw=true)
 
 ##### Végétation arbustive
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_arbustive_by_combination <- list()
@@ -962,7 +1001,11 @@ for (i in seq_along(n_cell)) {
     all_arbustive_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_arbustive_by_combination_df <- do.call(rbind, lapply(all_arbustive_by_combination, as.data.frame))
 all_arbustive_by_combination_df = data.frame(t(sapply(all_arbustive_by_combination, unlist)))
@@ -981,6 +1024,8 @@ ggplot(all_arbustive_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50)
 ![Régulier végétation arbustive basse](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/arbustive_reg_pte_final.jpg?raw=true)
 
 ##### Roselières/scirpaies
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_roselieres_by_combination <- list()
@@ -1023,7 +1068,11 @@ for (i in seq_along(n_cell)) {
     all_roselieres_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```r
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_roselieres_by_combination_df <- do.call(rbind, lapply(all_roselieres_by_combination, as.data.frame))
 all_roselieres_by_combination_df = data.frame(t(sapply(all_roselieres_by_combination, unlist)))
@@ -1042,6 +1091,8 @@ ggplot(all_roselieres_by_combination_df[-c(11,23),], aes(x = n_cell, y = moy_Q50
 ![Régulier roselières et scirpaies](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/roselieres_reg_pte_final.jpg?raw=true)
 
 ##### Friches
+
+Calcul de la valeur moyenne du paramètre et de ses intervalles de crédibilité, pour chaque cas de figure (résolution de la grille) :
 
 ```r
 all_friches_by_combination <- list()
@@ -1084,7 +1135,11 @@ for (i in seq_along(n_cell)) {
     all_friches_by_combination[[indice]] <- NA
   }
 }
+```
 
+Représentation graphique :
+
+```
 # Créer un dataframe à partir de la liste de moyennes des quantiles
 all_friches_by_combination_df <- do.call(rbind, lapply(all_friches_by_combination, as.data.frame))
 all_friches_by_combination_df = data.frame(t(sapply(all_friches_by_combination, unlist)))
