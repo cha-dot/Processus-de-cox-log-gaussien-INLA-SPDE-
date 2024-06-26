@@ -396,8 +396,8 @@ Le modèle a été réalisé pour plusieurs résolutions de grille (cellules de 
 Les commandes qui permettront de charger les bons fichiers :
 
 ```r
-n_cell = seq(500, 2500, by = 100) # résolution de la grille
-n_pe = c(69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12) # nb de points d'écoute (dans le nom des fichiers)
+n_cell = seq(300, 2500, by = 100) # résolution de la grille
+n_pe = c(92, 81, 69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12) # nb de points d'écoute (dans le nom des fichiers)
 n_rep = 10 # nb de réplicats
 
 generate_filename <- function(n_cell, n_pe, rep) { # génère le nom de fichier
@@ -461,7 +461,19 @@ ggplot(AUC_reg_final, aes(x = cellules, y = AUC))+ # AUC en fonction de la réso
 
 ### RMSE
 
-Le RMSE est une métrique utile pour comparer des modèles entre eux (plus il est faible, meilleur est le modèle). Nous procédons exactement de la même manière que l'AUC pour sa représentation graphique :
+Les commandes qui permettront de charger les bons fichiers :
+
+```r
+n_cell = seq(300, 2500, by = 100) # résolution de la grille
+n_pe = c(92, 81, 69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12) # nb de points d'écoute (dans le nom des fichiers)
+n_rep = 10 # nb de réplicats
+
+generate_filename <- function(n_cell, n_pe, rep) { # génère le nom de fichier
+  sprintf("~/nouv_metriques_%d_nPE_%d_rep_%d.RData", n_cell, n_pe, rep)
+}
+```
+
+Le RMSE est une métrique utile pour comparer des modèles entre eux (plus il est faible, meilleur est le modèle). Nous procédons exactement de la même manière que l'AUC pour sa représentation graphique.
 
 ```r
 all_RMSE_by_combination <- list() # vecteur qui stockera les RMSE
@@ -539,7 +551,7 @@ for (i in seq_along(n_cell)) { # pour chaque résolution de grille
       load(filename)
       # Vérifier l'existence des variables de quantiles
       if (exists("post.stat.max")) {
-        # Stocker les résultats aux vecteurs temporaires
+        # Stocker les résultats dans les vecteurs temporaires
         temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.max["2.5%"])
         temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.max["50%"])
         temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.max["97.5%"])
@@ -579,20 +591,509 @@ ggplot(all_max_by_combination_df, aes(x = n_cell, y = moy_Q50))+
   theme_minimal()
 ```
 
+![Régulier intensité de submersion](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/max_reg_pte_final.jpg?raw=true)
+
 #### Durée de submersion
+
+```r
+all_duree_by_combination <- list() vecteur qui stockera les durées de submersion
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) { # pour chaque résolution de grille
+  cell <- n_cell[i] # cas de figure i (dimensions des cellules)
+  pe <- n_pe[i] # nb de points d'écoute associé au cas de figure i
+  indice <- paste(cell, pe, sep = "_") # ex : "500_69"
+  temp_quantiles_Q2.5 <- c() # stockera les quantiles 2.5%
+  temp_quantiles_Q50 <- c() # stockera les médianes
+  temp_quantiles_Q97.5 <- c() # stockera les quantiles 97.5%
+  
+  for (rep in seq_len(n_rep)) { # pour chaque réplicat (x 10)
+    filename <- generate_filename(cell, pe, rep) # charge le fichier
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.duree")) {
+        # Stocker les résultats dans les vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.duree["2.5%"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.duree["50%"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.duree["97.5%"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) { # vérifie l'existence des quantiles
+    all_duree_by_combination[[indice]] <- c( # pour chaque cas de figure
+      moy_Q2.5 = mean(temp_quantiles_Q2.5), # moyenne du quantile 2.5%
+      moy_Q50 = mean(temp_quantiles_Q50), # moyenne de la médiane
+      moy_Q97.5 = mean(temp_quantiles_Q97.5) # moyenne du quantile 97.5%
+    )
+  } else {
+    all_duree_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_duree_by_combination_df <- do.call(rbind, lapply(all_duree_by_combination, as.data.frame))
+all_duree_by_combination_df = data.frame(t(sapply(all_duree_by_combination, unlist)))
+all_duree_by_combination_df = cbind(all_duree_by_combination_df, n_cell) # ajout de la colonne des dimensions des cellules de la grille
+# "sapply" convertit chaque élément de la liste en un vecteur et "t" transpose pour que chaque ligne corresponde à une combinaison
+rownames(all_duree_by_combination_df) = NULL # suppression des noms des lignes
+
+ggplot(all_duree_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+ # ligne pour les médianes
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+ # ruban pour les intervalles de crédibilité
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de la durée de submersion")+ # légende
+  scale_y_continuous(limits = c(-0.0075,0.0075))+ # limites de l'axe y
+  scale_x_reverse(breaks = all_duree_by_combination_df$n_cell)+ # inverse le sens de l'axe x (facultatif)
+  theme_minimal()
+```
+
+![Régulier durée de submersion](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/duree_reg_pte_final.jpg?raw=true)
 
 #### Végétation
 
+Les commandes qui permettront de charger les bons fichiers :
+
+```r
+n_cell = seq(300, 2500, by = 100)
+n_pe = c(92, 81, 69, 55, 48, 44, 37, 34, 31, 25, 27, 25, 18, 20, 22, 16, 15, 15, 14, 17, 15, 14, 12)
+n_rep = 10
+
+
+# Fonction pour générer le nom de fichier
+generate_filename <- function(n_cell, n_pe, rep) {
+  sprintf("~/post_reg_nouveaux/reg_post_%d_nPE_%d_rep_%d.RData", n_cell, n_pe, rep)
+}
+```
+
 ##### Cultures
+
+```r
+all_cultures_by_combination <- list() # vecteur qui stockera les paramètres de la modalité "cultures"
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) { # pour chaque résolution de grille
+  cell <- n_cell[i] # cas de figure i (dimensions des cellules)
+  pe <- n_pe[i] # nb de points d'écoute associé au cas de figure i
+  indice <- paste(cell, pe, sep = "_") # ex : "500_69"
+  temp_quantiles_Q2.5 <- c() # stockera les quantiles 2.5%
+  temp_quantiles_Q50 <- c() # stockera les médianes
+  temp_quantiles_Q97.5 <- c() # stockera les quantiles 97.5%
+  
+  for (rep in seq_len(n_rep)) { pour chaque réplicat (x 10)
+    filename <- generate_filename(cell, pe, rep) # charge le fichier
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Stocker les résultats dans les vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "cultures"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "cultures"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "cultures"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) { # vérifie l'existence des quantiles
+    all_cultures_by_combination[[indice]] <- c( # pour chaque cas de figure
+      moy_Q2.5 = mean(temp_quantiles_Q2.5), # moyenne du quantile 2.5%
+      moy_Q50 = mean(temp_quantiles_Q50), # moyenne de la médiane
+      moy_Q97.5 = mean(temp_quantiles_Q97.5) # moyenne du quantile 97.5%
+    )
+  } else {
+    all_cultures_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_cultures_by_combination_df <- do.call(rbind, lapply(all_cultures_by_combination, as.data.frame))
+all_cultures_by_combination_df = data.frame(t(sapply(all_cultures_by_combination, unlist)))
+all_cultures_by_combination_df = cbind(all_cultures_by_combination_df, n_cell) # ajout de la colonne des dimensions des cellules de la grille
+rownames(all_cultures_by_combination_df) = NULL # suppression des noms des lignes
+
+ggplot(all_cultures_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+ # ligne pour les médianes
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+ # ruban pour les intervalles de crédibilité
+  labs(x = "Taille des cellules (en m²)", y = "Estimation du paramètre -cultures-")+ # légende
+  #scale_y_continuous(limits = c(-2,1))+ # limites de l'axe y
+  scale_x_reverse(breaks = all_cultures_by_combination_df$n_cell)+ # inverse le sens de l'axe x (facultatif)
+  theme_minimal()
+```
+
+![Régulier cultures](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/cultures_reg_pte_final.jpg?raw=true)
 
 ##### Végétation rase
 
+```r
+all_rase_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "rase"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "rase"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "rase"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_rase_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_rase_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_rase_by_combination_df <- do.call(rbind, lapply(all_rase_by_combination, as.data.frame))
+all_rase_by_combination_df = data.frame(t(sapply(all_rase_by_combination, unlist)))
+all_rase_by_combination_df = cbind(all_rase_by_combination_df, n_cell)
+rownames(all_rase_by_combination_df) = NULL
+
+ggplot(all_rase_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de la végétation rase")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_rase_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier végétation rase](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/rase_reg_pte_final.jpg?raw=true)
+
 ##### Végétation haute fauchée
+
+```r
+all_fauchee_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "haute fauchée"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "haute fauchée"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "haute fauchée"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_fauchee_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_fauchee_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_fauchee_by_combination_df <- do.call(rbind, lapply(all_fauchee_by_combination, as.data.frame))
+all_fauchee_by_combination_df = data.frame(t(sapply(all_fauchee_by_combination, unlist)))
+all_fauchee_by_combination_df = cbind(all_fauchee_by_combination_df, n_cell)
+rownames(all_fauchee_by_combination_df) = NULL
+
+ggplot(all_fauchee_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de la végétation haute fauchée")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_fauchee_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier végétation haute fauchée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/fauchee_reg_pte_final.jpg?raw=true)
 
 ##### Végétation haute non fauchée
 
+```r
+all_non_fauchee_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "haute non fauchée"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "haute non fauchée"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "haute non fauchée"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_non_fauchee_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_non_fauchee_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_non_fauchee_by_combination_df <- do.call(rbind, lapply(all_non_fauchee_by_combination, as.data.frame))
+all_non_fauchee_by_combination_df = data.frame(t(sapply(all_non_fauchee_by_combination, unlist)))
+all_non_fauchee_by_combination_df = cbind(all_non_fauchee_by_combination_df, n_cell)
+rownames(all_non_fauchee_by_combination_df) = NULL
+
+ggplot(all_non_fauchee_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de la végétation haute non fauchée")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_non_fauchee_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier végétation haute non fauchée](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/non_fauchee_reg_pte_final.jpg?raw=true)
+
 ##### Végétation arbustive
+
+```r
+all_arbustive_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "arbustive"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "arbustive"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "arbustive"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_arbustive_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_arbustive_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_arbustive_by_combination_df <- do.call(rbind, lapply(all_arbustive_by_combination, as.data.frame))
+all_arbustive_by_combination_df = data.frame(t(sapply(all_arbustive_by_combination, unlist)))
+all_arbustive_by_combination_df = cbind(all_arbustive_by_combination_df, n_cell)
+rownames(all_arbustive_by_combination_df) = NULL
+
+ggplot(all_arbustive_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation de la végétation arbustive")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_arbustive_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier végétation arbustive basse](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/arbustive_reg_pte_final.jpg?raw=true)
 
 ##### Roselières/scirpaies
 
+```r
+all_roselieres_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "roselières/scirpaies"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "roselières/scirpaies"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "roselières/scirpaies"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_roselieres_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_roselieres_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_roselieres_by_combination_df <- do.call(rbind, lapply(all_roselieres_by_combination, as.data.frame))
+all_roselieres_by_combination_df = data.frame(t(sapply(all_roselieres_by_combination, unlist)))
+all_roselieres_by_combination_df = cbind(all_roselieres_by_combination_df, n_cell)
+rownames(all_roselieres_by_combination_df) = NULL
+
+ggplot(all_roselieres_by_combination_df[-c(11,23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation des roselières/scirpaies")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_roselieres_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier roselières et scirpaies](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/roselieres_reg_pte_final.jpg?raw=true)
+
 ##### Friches
+
+```r
+all_friches_by_combination <- list()
+
+# Boucle pour ouvrir chaque fichier, extraire les quantiles et calculer les moyennes
+for (i in seq_along(n_cell)) {
+  cell <- n_cell[i]
+  pe <- n_pe[i]
+  indice <- paste(cell, pe, sep = "_")
+  temp_quantiles_Q2.5 <- c()
+  temp_quantiles_Q50 <- c()
+  temp_quantiles_Q97.5 <- c()
+  
+  for (rep in seq_len(n_rep)) {
+    filename <- generate_filename(cell, pe, rep)
+    if (file.exists(filename)) {
+      load(filename)
+      # Vérifier l'existence des variables de quantiles
+      if (exists("post.stat.veg")) {
+        # Ajouter les résultats aux vecteurs temporaires
+        temp_quantiles_Q2.5 <- c(temp_quantiles_Q2.5, post.stat.veg["2.5%", "friches"])
+        temp_quantiles_Q50 <- c(temp_quantiles_Q50, post.stat.veg["50%", "friches"])
+        temp_quantiles_Q97.5 <- c(temp_quantiles_Q97.5, post.stat.veg["97.5%", "friches"])
+      } else {
+        warning(sprintf("Les quantiles n'existent pas dans le fichier %s.", filename))
+      }
+    } else {
+      warning(sprintf("Le fichier %s n'existe pas.", filename))
+    }
+  }
+  
+  # Calculer les moyennes des quantiles pour cette combinaison
+  if (length(temp_quantiles_Q2.5) > 0 & length(temp_quantiles_Q50) > 0 & length(temp_quantiles_Q97.5) > 0) {
+    all_friches_by_combination[[indice]] <- c(
+      moy_Q2.5 = mean(temp_quantiles_Q2.5),
+      moy_Q50 = mean(temp_quantiles_Q50),
+      moy_Q97.5 = mean(temp_quantiles_Q97.5)
+    )
+  } else {
+    all_friches_by_combination[[indice]] <- NA
+  }
+}
+
+# Créer un dataframe à partir de la liste de moyennes des quantiles
+all_friches_by_combination_df <- do.call(rbind, lapply(all_friches_by_combination, as.data.frame))
+all_friches_by_combination_df = data.frame(t(sapply(all_friches_by_combination, unlist)))
+all_friches_by_combination_df = cbind(all_friches_by_combination_df, n_cell)
+rownames(all_friches_by_combination_df) = NULL
+
+ggplot(all_friches_by_combination_df[-c(11:23),], aes(x = n_cell, y = moy_Q50))+
+  geom_line()+
+  geom_ribbon(aes(ymin = moy_Q2.5, ymax = moy_Q97.5), alpha=0.5)+
+  labs(x = "Taille des cellules (en m²)", y = "Estimation des friches")+
+  #scale_y_continuous(limits = c(-0.01,0.01))+
+  scale_x_reverse(breaks = all_friches_by_combination_df$n_cell)+
+  theme_minimal()
+```
+
+![Régulier friches](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/friches_reg_pte_final.jpg?raw=true)
