@@ -4,6 +4,7 @@ Cela consiste à définir une grille sur notre domaine d'étude et à ne garder 
 
 ## Table des matières
 
+- [Packages](#packages)
 - [Création de la grille](#création-de-la-grille)
 - [Modification du nombre de points d'écoute](#modification-du-nombre-de-points-découte)
 - [Modèle](#modèle)
@@ -24,6 +25,25 @@ Cela consiste à définir une grille sur notre domaine d'étude et à ne garder 
       - [Végétation arbustive](#végétation-arbustive)
       - [Roselières/scirpaies](#roselières/scirpaies)
       - [Friches](#friches)
+
+## Packages
+
+Les packages à charger sont les suivants :
+
+```r
+library(INLA)
+library(inlabru)
+library(ggplot2)
+library(raster)
+library(sf)
+library(sp)
+library(tidyverse)
+library(viridis)
+library(hrbrthemes)
+library(dplyr)
+library(tidyr)
+library(pROC)
+```
 
 ## Création de la grille
 
