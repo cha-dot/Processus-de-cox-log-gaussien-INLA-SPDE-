@@ -86,6 +86,8 @@ ggplot() +
   geom_sf(data = st_as_sf(Buffer_reduit_sp), alpha = 0.5, col = "orange", linewidth = 0.5)
 ```
 
+![Aléatoire répartition des buffers](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/buffers_aleatoires.jpg?raw=true)
+
 ## Modèle
 
 Le reste du modèle ne change pas (pour plus d'explications du modèle, se référer à README_INLA.md)
