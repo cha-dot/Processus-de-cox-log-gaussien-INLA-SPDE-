@@ -279,10 +279,12 @@ modtest = summary(ppVIV)
 
 ### Sauvegarde du summary
 
-Sauvegardons le `summary` :
+Si le modèle est répété pour différentes résolutions de la grille, il est possible de sauvegarder certains objets, tels que le summary, l'AUC ou encore les distributions a posteriori pour une comparaison de résultats.
+
+Si le modèle est répété sur `cel` différentes résolutions de grille et `rep` fois pour détenir des réplicats de chaque cas de figure, alors il est possible de sauvegarder le summary de cette manière :
 
 ```r
-  length(liste)
+  length(liste) # nb de points d'écoute
   chemin = "~/summaries_reg_nouveaux"
   fichier = paste0("nouv_summary_", cel, "_nPE_", length(liste), "_rep_", repetition, ".RData")
   nom_complet = file.path(chemin, fichier)
@@ -337,7 +339,7 @@ Si le script doit être répété de nombreuses fois, il peut être judicieux de
 
 ### Sauvegarde de l'AUC, du MSE et du RMSE
 
-Sauvegardons ces 3 dernières métriques :
+Il est possible de sauvegarder ces 3 dernières métriques :
 
 ```r
   chemin = "~/metriques_reg_nouveaux"
