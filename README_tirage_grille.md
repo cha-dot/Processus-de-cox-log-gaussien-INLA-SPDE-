@@ -459,6 +459,8 @@ ggplot(AUC_reg_final, aes(x = cellules, y = AUC))+ # AUC en fonction de la réso
   theme_minimal()
 ```
 
+![Régulier AUC](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/AUC_reg_finale.jpg?raw=true)
+
 ### RMSE
 
 Les commandes qui permettront de charger les bons fichiers :
@@ -526,6 +528,8 @@ ggplot(RMSE_reg_final, aes(x = cellules, y = RMSE))+ # RMSE en fonction de la r�
   labs(x = "Taille des cellules (en m²)", y = "RMSE")+ # légende
   theme_minimal()
 ```
+
+![Régulier RMSE](https://github.com/cha-dot/Processus-de-cox-log-gaussien-INLA-SPDE-/blob/images/RMSE_reg_finale.jpg?raw=true)
 
 ### Paramètres du modèle
 
