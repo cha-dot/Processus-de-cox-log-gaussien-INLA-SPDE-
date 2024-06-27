@@ -367,9 +367,123 @@ save(post.stat.veg, post.stat.duree, post.stat.max, file = nom_complet)
 
 ## Représentations graphiques des résultats
 
+Le modèle a été réalisé pour différents nombres de points d'écoute (de 0 à 85 par pas de 10). Chaque cas de figure a été répliqué 30 fois. Ainsi, nous ferons la moyenne des métriques pour chaque cas de figure.
+
 ### AUC
 
+Dans un premier temps, nous chargeons les données d'AUC de chaque réplicat pour chaque nombre de points d'écoute.
+
+```r
+all_AUC = list() # stockera toutes les valeurs d'AUC
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
+  
+  all_AUC[[as.character(points)]] <- list() # stockera les AUC d'un cas de figure
+  
+for (repet in 1:30) { # pour chaque réplicat
+  
+  chemin = "~/metriques"
+  fichier = paste0("nouv_metriques_", repet, "_nPE_", points, ".RData") 
+  nom_complet = file.path(chemin, fichier) # nom du fichier en fonction du nb de points d'écoute et du réplicat
+  load(nom_complet) # charge le fichier
+  
+  all_AUC[[as.character(points)]][[paste0("repet_", repet)]] = AUC # valeur d'AUC (+indice pour les réplicats (x 30))
+}}
+```
+A présent, nous allons faire la moyenne des AUC pour chaque cas de figure :
+
+```r
+mean_AUC <- list() # stockera les moyennes
+
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
+  auc_values <- unlist(all_AUC[[as.character(points)]]) # liste des AUC pour un cas de figure
+  mean_AUC[[as.character(points)]] <- mean(auc_values, na.rm = TRUE) # moyenne de ces AUC
+}
+```
+
+Nous établissons un dataframe à partir de ces données qui servira pour la représentation graphique :
+
+```r
+points <- c(5, 15, 25, 35, 45, 55, 65, 75, 85)
+mean_values <- unlist(mean_AUC) # liste des moyennes convertie en vecteur
+
+result_matrix <- cbind(points, mean_values) # tableau
+result_matrix <- rbind(result_matrix, c(92, 0.8509)) # ajout de la valeur du modèle qui comprend tous les points d'écoute
+AUC = as.data.frame(result_matrix)
+```
+Passons à la représentation graphique :
+
+```r
+ ggplot(data = AUC, aes(x = points, y = mean_values))+ # AUC en fonction du nombre de points d'écoute
+  geom_line()+ # ligne qui relie les points moyens
+  geom_point(color = "black", size = 1)+ # points moyens
+  labs(x = "Nombre de points d'écoute", y = "AUC moyenne") + # légende
+  theme_minimal()+
+  scale_x_continuous(breaks = unique(AUC$points), labels = unique(AUC$points)) # affiche toutes les valeurs du vecteur "points" sur l'axe x
+
+```
+
 ### RMSE
+
+La racine de l'erreur quadratique moyenne (RMSE) est une métrique qui permet de comparer des modèles entre eux (plus le RMSE est faible, meilleur est le modèle).
+
+La méthodologie pour charger et afficher les valeurs de RMSE est similaire à celle utilisée pour l'AUC.
+
+Dans un premier temps, nous chargeons toutes les données de RMSE et les regroupons par nombre de points d'écoute (par cas de figure donc).
+
+```r
+all_RMSE = list() # stockera toutes les valeurs de RMSE
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
+  
+  # Initialiser une sous-liste pour chaque point
+  all_RMSE[[as.character(points)]] <- list() stockera les RMSE d'un cas de figure
+  
+  for (repet in 1:30) { # pour chaque réplicat
+    
+    chemin = "~/metriques"
+    fichier = paste0("nouv_metriques_", repet, "_nPE_", points, ".RData") 
+    nom_complet = file.path(chemin, fichier) # nom du fichier en fonction du nb de points d'écoute et du réplicat
+    load(nom_complet) # charge le fichier
+    
+    # Ajouter les résultats à la liste avec une clé indiquant la répétition
+    all_RMSE[[as.character(points)]][[paste0("repet_", repet)]] = RMSE # valeur de RMSE (+indice pour les réplicats (x30))
+  }}
+```
+
+A présent, nous allons faire la moyenne des RMSE pour chaque cas de figure :
+
+```r
+mean_RMSE <- list() # stockera les moyennes
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
+  rmse_values <- unlist(all_RMSE[[as.character(points)]]) # liste des RMSE pour un cas de figure
+  mean_RMSE[[as.character(points)]] <- mean(rmse_values, na.rm = TRUE) # moyenne de ces RMSE
+}
+```
+
+Nous établissons un dataframe, à partir de ces données, qui servira pour la représentation graphique :
+
+```r
+points <- c(5, 15, 25, 35, 45, 55, 65, 75, 85)
+mean_values2 <- unlist(mean_RMSE) # liste des moyennes convertie en vecteur
+
+result_matrix2 <- cbind(points, mean_values2) # tableau
+result_matrix2 <- rbind(result_matrix2, c(92, 2.3194)) # ajout de la valeur du modèle qui comprend tous les points d'écoute
+RMSE = as.data.frame(result_matrix2)
+```
+
+Passons à la représentation graphique :
+
+```r
+ggplot(data = RMSE, aes(x = points, y = mean_values2))+
+  geom_line()+ # ligne relier les points moyens
+  geom_point(color = "black", size = 1)+ # points moyens
+  labs(x = "Nombre de points d'écoute", y = "RMSE moyen") + # légende
+  theme_minimal()+
+  scale_x_continuous(breaks = unique(RMSE$points), labels = unique(RMSE$points)) # affiche toutes les valeurs du vecteur "points" sur l'axe x
+```
 
 ### Paramètres du modèle
 
