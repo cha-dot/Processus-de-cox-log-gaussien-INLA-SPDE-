@@ -514,4 +514,4 @@ ggplot(data=tab_duree, aes(x=points, y=mean_duree, ymin=duree_IC1, ymax=duree_IC
 
 #### Végétation
 
-Nous allons procéder de la même manière pour tous les paramètres de la végatation.
+Nous allons procéder de la même manière pour tous les paramètres de la végétation.
