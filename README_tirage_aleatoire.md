@@ -506,7 +506,7 @@ mean_duree_df <- data.frame( # on détermine les différentes colonnes
   )
   
     
-ggplot(data=tab_duree, aes(x=points, y=mean_duree, ymin=duree_IC1, ymax=duree_IC2)) + 
+ggplot(data=mean_duree_max, aes(x=points, y=mean_duree, ymin=duree_IC1, ymax=duree_IC2)) + 
   geom_line() + # ligne pour les médianes
   geom_ribbon(alpha=0.5)+ # ruban pour les intervalles de crédibilité
   labs(x = "Nombre de points d'écoute", y = "Estimation de la durée de submersion") # légende
@@ -515,3 +515,272 @@ ggplot(data=tab_duree, aes(x=points, y=mean_duree, ymin=duree_IC1, ymax=duree_IC
 #### Végétation
 
 Nous allons procéder de la même manière pour tous les paramètres de la végétation.
+
+Dans un premier temps, nous chargeons tous les fichiers :
+
+```r
+all_param = list() # stockera les paramètres de végétation
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) { # pour chaque cas de figure
+  
+  all_param[[as.character(points)]] <- list() # sous-liste correspondant à un cas de figure
+  
+  for (repet in 1:30) { # 30 réplicats
+    
+    chemin = "~/post_nouveaux"
+    fichier = paste0("post_", repet, "_nPE_", points, ".RData")
+    nom_complet = file.path(chemin, fichier) # nom du fichier en fonction du nb de points d'écoute et du réplicat
+    load(nom_complet) #charge le fichier
+    
+    all_param[[as.character(points)]][[paste0("repet_", repet)]] <- post.stat.veg # paramètres de végétation
+  }}
+```
+A présent, nous calculons les moyennes des médianes et des quantiles (2.5% et 97.5%) de chacune des modalités :
+
+```r
+# Stockera les moyennes des paramètres
+all_cultures = list()
+all_rase = list()
+all_haute_fauchee = list()
+all_haute_non_fauchee = list()
+all_arbustive = list()
+all_roselieres = list()
+all_friches = list()
+
+# Stockera les moyennes des quantiles 2.5%
+all_cultures_IC1 = list()
+all_rase_IC1 = list()
+all_haute_fauchee_IC1 = list()
+all_haute_non_fauchee_IC1 = list()
+all_arbustive_IC1 = list()
+all_roselieres_IC1 = list()
+all_friches_IC1 = list()
+
+# Stockera les moyennes des quantiles 97.5%
+all_cultures_IC2 = list()
+all_rase_IC2 = list()
+all_haute_fauchee_IC2 = list()
+all_haute_non_fauchee_IC2 = list()
+all_arbustive_IC2 = list()
+all_roselieres_IC2 = list()
+all_friches_IC2 = list()
+
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
+  all_cultures[[as.character(points)]] = NULL
+  all_rase[[as.character(points)]] = NULL
+  all_haute_fauchee[[as.character(points)]] = NULL
+  all_haute_non_fauchee[[as.character(points)]] = NULL
+  all_arbustive[[as.character(points)]] = NULL
+  all_roselieres[[as.character(points)]] = NULL
+  all_friches[[as.character(points)]] = NULL
+  
+  all_cultures_IC1[[as.character(points)]] = NULL
+  all_rase_IC1[[as.character(points)]] = NULL
+  all_haute_fauchee_IC1[[as.character(points)]] = NULL
+  all_haute_non_fauchee_IC1[[as.character(points)]] = NULL
+  all_arbustive_IC1[[as.character(points)]] = NULL
+  all_roselieres_IC1[[as.character(points)]] = NULL
+  all_friches_IC1[[as.character(points)]] = NULL  
+  
+  all_cultures_IC2[[as.character(points)]] = NULL
+  all_rase_IC2[[as.character(points)]] = NULL
+  all_haute_fauchee_IC2[[as.character(points)]] = NULL
+  all_haute_non_fauchee_IC2[[as.character(points)]] = NULL
+  all_arbustive_IC2[[as.character(points)]] = NULL
+  all_roselieres_IC2[[as.character(points)]] = NULL
+  all_friches_IC2[[as.character(points)]] = NULL
+  
+  for(repet in 1:30) {
+    modtest <- all_param[[as.character(points)]][[paste0("repet_", repet)]]
+    
+    cultures = ifelse("cultures" %in% colnames(modtest), modtest[2, "cultures"], NA) # vérifie l'existence du paramètre, puis stocke la médiane
+    rase = ifelse("rase" %in% colnames(modtest), modtest[2, "rase"], NA)
+    haute_fauchee = ifelse("haute fauchée" %in% colnames(modtest), modtest[2, "haute fauchée"], NA)
+    haute_non_fauchee = ifelse("haute non fauchée" %in% colnames(modtest), modtest[2, "haute non fauchée"], NA)
+    arbustive = ifelse("arbustive" %in% colnames(modtest), modtest[2, "arbustive"], NA)
+    roselieres = ifelse("roselières/scirpaies" %in% colnames(modtest), modtest[2, "roselières/scirpaies"], NA)
+    friches = ifelse("friches" %in% colnames(modtest), modtest[2, "friches"], NA)
+    
+    cultures_IC1 = ifelse("cultures" %in% colnames(modtest), modtest[1, "cultures"], NA) # vérifie l'existence du paramètre, puis stocke le quantile 2.5%
+    rase_IC1 = ifelse("rase" %in% colnames(modtest), modtest[1, "rase"], NA)
+    haute_fauchee_IC1 = ifelse("haute fauchée" %in% colnames(modtest), modtest[1, "haute fauchée"], NA)
+    haute_non_fauchee_IC1 = ifelse("haute non fauchée" %in% colnames(modtest), modtest[1, "haute non fauchée"], NA)
+    arbustive_IC1 = ifelse("arbustive" %in% colnames(modtest), modtest[1, "arbustive"], NA)
+    roselieres_IC1 = ifelse("roselières/scirpaies" %in% colnames(modtest), modtest[1, "roselières/scirpaies"], NA)
+    friches_IC1 = ifelse("friches" %in% colnames(modtest), modtest[1, "friches"], NA)
+    
+    cultures_IC2 = ifelse("cultures" %in% colnames(modtest), modtest[3, "cultures"], NA) # vérifie l'existence du paramètre, puis stocke le quantile 97.5%
+    rase_IC2 = ifelse("rase" %in% colnames(modtest), modtest[3, "rase"], NA)
+    haute_fauchee_IC2 = ifelse("haute fauchée" %in% colnames(modtest), modtest[3, "haute fauchée"], NA)
+    haute_non_fauchee_IC2 = ifelse("haute non fauchée" %in% colnames(modtest), modtest[3, "haute non fauchée"], NA)
+    arbustive_IC2 = ifelse("arbustive" %in% colnames(modtest), modtest[3, "arbustive"], NA)
+    roselieres_IC2 = ifelse("roselières/scirpaies" %in% colnames(modtest), modtest[3, "roselières/scirpaies"], NA)
+    friches_IC2 = ifelse("friches" %in% colnames(modtest), modtest[3, "friches"], NA)
+    
+    # Ajoute les valeurs aux listes correspondantes
+    all_cultures[[as.character(points)]] = c(all_cultures[[as.character(points)]], cultures)
+    all_rase[[as.character(points)]] = c(all_rase[[as.character(points)]], rase)
+    all_haute_fauchee[[as.character(points)]] = c(all_haute_fauchee[[as.character(points)]], haute_fauchee)
+    all_haute_non_fauchee[[as.character(points)]] = c(all_haute_non_fauchee[[as.character(points)]], haute_non_fauchee)
+    all_arbustive[[as.character(points)]] = c(all_arbustive[[as.character(points)]], arbustive)
+    all_roselieres[[as.character(points)]] = c(all_roselieres[[as.character(points)]], roselieres)
+    all_friches[[as.character(points)]] = c(all_friches[[as.character(points)]], friches)
+    
+    all_cultures_IC1[[as.character(points)]] = c(all_cultures_IC1[[as.character(points)]], cultures_IC1)
+    all_rase_IC1[[as.character(points)]] = c(all_rase_IC1[[as.character(points)]], rase_IC1)
+    all_haute_fauchee_IC1[[as.character(points)]] = c(all_haute_fauchee_IC1[[as.character(points)]], haute_fauchee_IC1)
+    all_haute_non_fauchee_IC1[[as.character(points)]] = c(all_haute_non_fauchee_IC1[[as.character(points)]], haute_non_fauchee_IC1)
+    all_arbustive_IC1[[as.character(points)]] = c(all_arbustive_IC1[[as.character(points)]], arbustive_IC1)
+    all_roselieres_IC1[[as.character(points)]] = c(all_roselieres_IC1[[as.character(points)]], roselieres_IC1)
+    all_friches_IC1[[as.character(points)]] = c(all_friches_IC1[[as.character(points)]], friches_IC1)
+    
+    all_cultures_IC2[[as.character(points)]] = c(all_cultures_IC2[[as.character(points)]], cultures_IC2)
+    all_rase_IC2[[as.character(points)]] = c(all_rase_IC2[[as.character(points)]], rase_IC2)
+    all_haute_fauchee_IC2[[as.character(points)]] = c(all_haute_fauchee_IC2[[as.character(points)]], haute_fauchee_IC2)
+    all_haute_non_fauchee_IC2[[as.character(points)]] = c(all_haute_non_fauchee_IC2[[as.character(points)]], haute_non_fauchee_IC2)
+    all_arbustive_IC2[[as.character(points)]] = c(all_arbustive_IC2[[as.character(points)]], arbustive_IC2)
+    all_roselieres_IC2[[as.character(points)]] = c(all_roselieres_IC2[[as.character(points)]], roselieres_IC2)
+    all_friches_IC2[[as.character(points)]] = c(all_friches_IC2[[as.character(points)]], friches_IC2)
+  }
+}
+
+
+mean_cultures = sapply(all_cultures, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des médianes
+mean_rase = sapply(all_rase, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_fauchee = sapply(all_haute_fauchee, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_non_fauchee = sapply(all_haute_non_fauchee, function(x) mean(unlist(x), na.rm = TRUE))
+mean_arbustive = sapply(all_arbustive, function(x) mean(unlist(x), na.rm = TRUE))
+mean_roselieres = sapply(all_roselieres, function(x) mean(unlist(x), na.rm = TRUE))
+mean_friches = sapply(all_friches, function(x) mean(unlist(x), na.rm = TRUE))
+
+mean_cultures_IC1 = sapply(all_cultures_IC1, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 2.5%
+mean_rase_IC1 = sapply(all_rase_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_fauchee_IC1 = sapply(all_haute_fauchee_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_non_fauchee_IC1 = sapply(all_haute_non_fauchee_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+mean_arbustive_IC1 = sapply(all_arbustive_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+mean_roselieres_IC1 = sapply(all_roselieres_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+mean_friches_IC1 = sapply(all_friches_IC1, function(x) mean(unlist(x), na.rm = TRUE))
+
+mean_cultures_IC2 = sapply(all_cultures_IC2, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 97.5%
+mean_rase_IC2 = sapply(all_rase_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_fauchee_IC2 = sapply(all_haute_fauchee_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+mean_haute_non_fauchee_IC2 = sapply(all_haute_non_fauchee_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+mean_arbustive_IC2 = sapply(all_arbustive_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+mean_roselieres_IC2 = sapply(all_roselieres_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+mean_friches_IC2 = sapply(all_friches_IC2, function(x) mean(unlist(x), na.rm = TRUE))
+```
+Puis, nous créons les dataframes utiles aux représentations graphiques :
+
+```r
+points <- c(5, 15, 25, 35, 45, 55, 65, 75, 85)
+
+# Cultures
+mean_cultures_df <- data.frame(
+  points = points,
+  mean_cultures = mean_cultures,
+  cultures_IC1 = mean_cultures_IC1,
+  cultures_IC2 = mean_cultures_IC2
+)
+mean_cultures_df = rbind(mean_cultures_df, c(92, -0.7594380, -0.9763430, -0.09041827)) # ajout des valeurs correspondant au modèle avec tous les points d'écoute
+
+# Végétation rase
+mean_rase_df <- data.frame(
+  points = points,
+  mean_rase = mean_rase,
+  rase_IC1 = mean_rase_IC1,
+  rase_IC2 = mean_rase_IC2
+)
+mean_rase_df = rbind(mean_rase_df, c(92, -0.48107861, -0.93085301, -0.09041827))
+
+# Végétation haute fauchée
+mean_haute_fauchee_df = data.frame(
+  points = points,
+  mean_haute_fauchee = mean_haute_fauchee,
+  haute_fauchee_IC1 = mean_haute_fauchee_IC1,
+  haute_fauchee_IC2 = mean_haute_fauchee_IC2
+)
+mean_haute_fauchee_df = rbind(mean_haute_fauchee_df, c(92, -0.5879129, -0.8701863, -0.3092496))
+
+# Végétation haute non fauchée
+mean_haute_non_fauchee_df = data.frame(
+  points = points,
+  mean_haute_non_fauchee = mean_haute_non_fauchee,
+  haute_non_fauchee_IC1 = mean_haute_non_fauchee_IC1,
+  haute_non_fauchee_IC2 = mean_haute_non_fauchee_IC2
+)
+mean_haute_non_fauchee_df = rbind(mean_haute_non_fauchee_df, c(92, -0.04783005, -0.26903250, 0.13225568))
+
+# Végétation arbustive basse
+mean_arbustive_df = data.frame(
+  points = points,
+  mean_arbustive = mean_arbustive,
+  arbustive_IC1 = mean_arbustive_IC1,
+  arbustive_IC2 = mean_arbustive_IC2
+)
+mean_arbustive_df = rbind(mean_arbustive_df, c(92, 0.5366907, -0.2274477, 1.2822200))
+
+# Roselières et scirpaies
+mean_roselieres_df = data.frame(
+  points = points,
+  mean_roselieres = mean_roselieres,
+  roselieres_IC1 = mean_roselieres_IC1,
+  roselieres_IC2 = mean_roselieres_IC2
+)
+mean_roselieres_df = rbind(mean_roselieres_df, c(92, 0.28671340, -0.03498487, 0.60925905))
+
+# Friches
+mean_friches_df = data.frame(
+  points = points,
+  mean_friches = mean_friches,
+  friches_IC1 = mean_friches_IC1,
+  friches_IC2 = mean_friches_IC2
+)
+mean_friches_df = rbind(mean_friches_df, c(92, 1.0737676, 0.6223037, 1.5016847))
+```
+
+Et enfin les représentations graphiques :
+
+```r
+# Cultures
+ggplot(data=mean_cultures_df, aes(x=points, y=mean_cultures, ymin=cultures_IC1, ymax=cultures_IC2)) + 
+  geom_line() + 
+  geom_ribbon(alpha=0.5)+
+  labs(x = "Nombre de points d'écoute", y = "Estimation du paramètre -cultures-")
+
+# Végétation rase
+  ggplot(data=mean_rase_df, aes(x=points, y=mean_rase, ymin=rase_IC1, ymax=rase_IC2)) + 
+  geom_line() + 
+  geom_ribbon(alpha=0.5)+
+  labs(x = "Nombre de points d'écoute", y = "Estimation de la végétation rase")
+  
+# Végétation haute fauchée
+  ggplot(data=mean_haute_fauchee_df, aes(x=points, y=mean_haute_fauchee, ymin=haute_fauchee_IC1, ymax=haute_fauchee_IC2)) + 
+  geom_line() + 
+  geom_ribbon(alpha=0.5)+
+  labs(x = "Nombre de points d'écoute", y = "Estimation de la végétation herbacée fauchée")
+
+# Végétation haute non fauchée
+  ggplot(data=mean_haute_non_fauchee_df, aes(x=points, y=mean_haute_non_fauchee, ymin=haute_non_fauchee_IC1, ymax=haute_non_fauchee_IC2)) + 
+    geom_line() + 
+    geom_ribbon(alpha=0.5)+
+    labs(x = "Nombre de points d'écoute", y = "Estimation de la végétation herbacée non fauchée")
+
+# Végétation arbustive basse
+  ggplot(data=mean_arbustive_df, aes(x=points, y=mean_arbustive, ymin=arbustive_IC1, ymax=arbustive_IC2)) + 
+    geom_line() + 
+    geom_ribbon(alpha=0.5)+
+    labs(x = "Nombre de points d'écoute", y = "Estimation de la végétation arbustive")
+
+# Roselières et scirpaies
+  ggplot(data=mean_roselieres_df, aes(x=points, y=mean_roselieres, ymin=roselieres_IC1, ymax=roselieres_IC2)) + 
+    geom_line() + 
+    geom_ribbon(alpha=0.5)+
+    labs(x = "Nombre de points d'écoute", y = "Estimation du paramètre -roselières/scirpaies-")
+
+# Friches
+  ggplot(data=mean_friches_df, aes(x=points, y=mean_friches, ymin=friches_IC1, ymax=friches_IC2)) + 
+    geom_line() + 
+    geom_ribbon(alpha=0.5)+
+    labs(x = "Nombre de points d'écoute", y = "Estimation du paramètre -friches-")
+```
