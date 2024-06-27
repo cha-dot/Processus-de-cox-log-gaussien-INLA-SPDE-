@@ -375,6 +375,143 @@ save(post.stat.veg, post.stat.duree, post.stat.max, file = nom_complet)
 
 #### Intensité de submersion
 
+Pour chaque nombre de points d'écoute, les 30 valeurs d'intensité de submersion sont chargées de la manière suivante :
+
+```r
+all_param = list() # stockera toutes les intensités de submersion
+  
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) { # pour chaque cas de figure
+    
+all_param[[as.character(points)]] <- list() # sous-liste correspondant à un cas de figure
+    
+for (repet in 1:30) { # 30 réplicats
+      
+chemin = "~/post_nouveaux"
+fichier = paste0("post_", repet, "_nPE_", points, ".RData") 
+nom_complet = file.path(chemin, fichier) # nom du fichier en fonction du nb de points d'écoute et du réplicat
+load(nom_complet) # charge le fichier
+      
+all_param[[as.character(points)]][[paste0("repet_", repet)]] <- post.stat.max # intensité de submersion
+}}
+```
+
+Nous allons à présent calculer les moyennes de ces intensités de submersion pour chaque nombre de points d'écoute, ainsi que les moyennes des intervalles de crédibilité associés :
+
+```r
+all_max = list() # stockera les moyennes d'intensité de submersion
+all_max_IC1 = list() # stockera les moyennes des quantiles 2.5%
+all_max_IC2 = list() # stockera les moyennes des quantiles 97.5%
+
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) { # pour chaque cas de figure
+  all_max[[as.character(points)]] = NULL
+  all_max_IC1[[as.character(points)]] = NULL
+  all_max_IC2[[as.character(points)]] = NULL
+
+for(repet in 1:30) { # pour chaque réplicat
+  modtest <- all_param[[as.character(points)]][[paste0("repet_", repet)]] # stocke l'intensité de submersion correspondante
+      
+  max = modtest[2] # médiane
+  max_IC1 = modtest[1] # quantile 2.5%
+  max_IC2 = modtest[3] # quantile 97.5%
+
+  all_max[[as.character(points)]] = c(all_max[[as.character(points)]], max) # stocke toutes les médianes pour le nb de points d'écoute en question
+  all_max_IC1[[as.character(points)]] = c(all_max_IC1[[as.character(points)]], max_IC1) # stocke quantiles 2.5% pour le nb de points d'écoute en question
+  all_max_IC2[[as.character(points)]] = c(all_max_IC2[[as.character(points)]], max_IC2) # stocke quantiles 97.5% pour le nb de points d'écoute en question
+    }
+  }
+  
+  mean_max = sapply(all_max, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des médianes
+  mean_max_IC1 = sapply(all_max_IC1, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 2.5%
+  mean_max_IC2 = sapply(all_max_IC2, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 97.5%
+```
+
+Afin de représenter graphiquement les résultats, nous organisons les données dans un dataframe :
+
+```r
+  points <- c(5, 15, 25, 35, 45, 55, 65, 75, 85)
+  
+  mean_max_df <- data.frame( # on détermine les différentes colonnes
+    points = points,
+    mean_max = mean_max,
+    max_IC1 = mean_max_IC1,
+    max_IC2 = mean_max_IC2
+  )
+  
+  ggplot(data=mean_max_df, aes(x=points, y=mean_max, ymin=max_IC1, ymax=max_IC2)) + 
+    geom_line() + # ligne pour les médianes
+    geom_ribbon(alpha=0.5)+ # ruban pour les intervalles de crédibilité
+    labs(x = "Nombre de points d'écoute", y = "Estimation de l'intensité de submersion") # légende
+```
+
 #### Durée de submersion
 
+Pour chaque nombre de points d'écoute, les 30 valeurs de durée de submersion sont chargées de la manière suivante :
+
+```r
+all_param = list() # stockera toutes les durées de submersion
+  
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) { # pour chaque cas de figure
+    
+  all_param[[as.character(points)]] <- list() # sous-liste correspondant à un cas de figure
+    
+  for (repet in 1:30) { # 30 réplicats
+      
+  chemin = "~/post_nouveaux"
+  fichier = paste0("post_", repet, "_nPE_", points, ".RData")
+  nom_complet = file.path(chemin, fichier) # nom du fichier en fonction du nb de points d'écoute et du réplicat
+  load(nom_complet) # charge le fichier
+      
+  all_param[[as.character(points)]][[paste0("repet_", repet)]] <- post.stat.duree # durée de submersion
+    }}
+```
+Nous allons à présent calculer les moyennes de ces durées de submersion pour chaque nombre de points d'écoute, ainsi que les moyennes des intervalles de crédibilité associés :
+
+```r
+all_duree = list() # stockera les moyennes des durées de submersion
+all_duree_IC1 = list() # stockera les moyennes des quantiles 2.5%
+all_duree_IC2 = list() # stockera les moyennes des quantiles 97.5%
+  
+for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) { # pour chaque cas de figure
+  all_duree[[as.character(points)]] = NULL
+  all_duree_IC1[[as.character(points)]] = NULL
+  all_duree_IC2[[as.character(points)]] = NULL
+    
+for(repet in 1:30) { # pour chaque réplicat
+  modtest <- all_param[[as.character(points)]][[paste0("repet_", repet)]] # stocke la durée de submersion correspondante
+        
+  duree = modtest[2] # médiane
+  duree_IC1 = modtest[1] # quantile 2.5%
+  duree_IC2 = modtest[3] # quantile 97.5%
+        
+  all_duree[[as.character(points)]] = c(all_duree[[as.character(points)]], duree) # stocke toutes les médianes pour le nb de points d'écoute en question
+  all_duree_IC1[[as.character(points)]] = c(all_duree_IC1[[as.character(points)]], duree_IC1) # stocke quantiles 2.5% pour le nb de points d'écoute en question
+  all_duree_IC2[[as.character(points)]] = c(all_duree_IC2[[as.character(points)]], duree_IC2) # stocke quantiles 97.5% pour le nb de points d'écoute en question
+    }
+  }
+  
+mean_duree = sapply(all_duree, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des médianes
+mean_duree_IC1 = sapply(all_duree_IC1, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 2.5%
+mean_duree_IC2 = sapply(all_duree_IC2, function(x) mean(unlist(x), na.rm = TRUE)) # moyenne des quantiles 97.5%
+```
+Afin de représenter graphiquement les résultats, nous organisons les données dans un dataframe :
+
+```r
+points <- c(5, 15, 25, 35, 45, 55, 65, 75, 85)
+  
+mean_duree_df <- data.frame( # on détermine les différentes colonnes
+  points = points,
+  mean_duree = mean_duree,
+  duree_IC1 = mean_duree_IC1,
+  duree_IC2 = mean_duree_IC2
+  )
+  
+    
+ggplot(data=tab_duree, aes(x=points, y=mean_duree, ymin=duree_IC1, ymax=duree_IC2)) + 
+  geom_line() + # ligne pour les médianes
+  geom_ribbon(alpha=0.5)+ # ruban pour les intervalles de crédibilité
+  labs(x = "Nombre de points d'écoute", y = "Estimation de la durée de submersion") # légende
+  ```
+
 #### Végétation
+
+Nous allons procéder de la même manière pour tous les paramètres de la végatation.
