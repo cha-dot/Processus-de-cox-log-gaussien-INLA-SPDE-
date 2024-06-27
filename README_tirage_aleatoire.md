@@ -5,6 +5,7 @@ Cela consiste à supprimer progressivement des points d'écoute aléatoirement s
 ## Table des matières
 
 - [Packages](#packages)
+- [Données](#données)
 - [Modification du nombre de points d'écoute](#modification-du-nombre-de-points-découte)
 - [Nouveau jeu de données](#nouveau-jeu-de-données)
 - [Modèle](#modèle)
@@ -44,6 +45,15 @@ library(hrbrthemes)
 library(dplyr)
 library(tidyr)
 library(pROC)
+```
+## Données
+
+Utiliser ces commandes pour charger les fichiers nécessaires à la réalisation du modèle :
+
+```r
+source("inlabookfunctions.R")
+
+load("dataprocess_final.rda")
 ```
 
 ## Modification du nombre de points d'écoute
