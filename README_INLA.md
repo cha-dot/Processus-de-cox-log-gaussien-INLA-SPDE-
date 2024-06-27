@@ -8,8 +8,8 @@ Les processus de cox log-gaussien permettent d'étudier la structure de points s
   - [Les observations](#les-observations)
   - [Le domaine d'étude](#le-domaine-détude)
   - [Les zones de prospections](#les-zones-de-prospection)
+  - [Les covariables environnementales](#les-covariables-environnementales)*
   - [Sauvegarde des données](#sauvegarde-des-données)
-  - [Les covariables environnementales](#les-covariables-environnementales)
 - [Modèle](#modèle)
   - [Représentation des données](#représentation-des-données)
   - [Triangulation de l'espace](#triangulation-de-lespace)
@@ -134,14 +134,6 @@ Si vous ne détenez pas de fichier unique des zones de prospection mais qu'il ex
   Buffer_sp = as(Buffer, "Spatial") # conversion de format
 ```
 
-### Sauvegarde des données
-
-Il est possible, voire recommander de sauvegarder les fichiers (observations, domaine d'étude et zones de prospection) dans un unique fichier R. Cela permettra de les appeler avec une seule commande et de s'affranchir du code au-dessus.
-
-```r
-save(GB_PE_eau_fauche_LAMB, contour_sp, Buffer_sp, file = "dataprocess.rda")
-```
-
 ### Les covariables environnementales
 
 Pour des variables spatiales, détenir des fichiers géospatiaux.<br>
@@ -151,12 +143,20 @@ Il est possible d'avoir les données sous un autre format mais cela nécessitera
 
 L'ajout de covariables environnementales est facultatif.
 
+### Sauvegarde des données
+
+Il est possible, voire recommander de sauvegarder les fichiers (observations, domaine d'étude, zones de prospection, et covariables environnementales) dans un unique fichier R. Cela permettra de les appeler avec une seule commande et de s'affranchir du code au-dessus.
+
+```r
+save(GB_PE_eau_fauche, GB_PE_eau_fauche_LAMB, contour, contour_sp, Buffer, Buffer_sp, eau, vegSG2, file = "dataprocess_final.rda")
+```
+
 ## Modèle
 
 ### Représentation des données
 
 ```r
-load("dataprocess.rda")
+load("dataprocess_final.rda")
 
 ggplot() +
   geom_sf(data = st_as_sf(GB_PE_eau_fauche_LAMB), col = "blue", size = 0.1) +
@@ -290,17 +290,12 @@ for (i in 2018:2023){
 
 ### Covariables environnementales
 
-Chargement des données environnementales
+Charger les données environnementales si elles n'étaient pas incluses dans `dataprocess_final`. Ici, les fichiers de fauche seront appelés consécutivement dans la fonction que nous allons déterminer. Pour cela, nous indiquons alors le chemin du dossier où se trouvent les fichiers et créons un vecteur contenant les noms des fichiers.
 
 ```r
-veg2 = raster("Rgpt_vg_3.tif") # raster végétation
-vegSG2 = as(veg2, "SpatialGridDataFrame") # conversion du format
-
 setwd("Fauche") # spécifier le chemin pour l'ouverture des fichiers plus tard
 # Vecteur qui contient le nom des fichiers qui seront appelés dans la fonction
 shapefiles = c("Fauche_2017_seule.shp", "Fauche_2018_seule.shp", "Fauche_2019_seule.shp", "Fauche_2020_seule.shp", "Fauche_2021_seule.shp", "Fauche_2022_seule.shp")
-
-eau = read.csv("Hauteurs_eau_finales.csv", header = T, stringsAsFactors = T) # tableau des hauteurs d'eau
 ```
 
 #### Végétation
