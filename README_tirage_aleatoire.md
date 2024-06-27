@@ -448,7 +448,7 @@ all_RMSE = list() # stockera toutes les valeurs de RMSE
 for(points in c(5, 15, 25, 35, 45, 55, 65, 75, 85)) {
   
   # Initialiser une sous-liste pour chaque point
-  all_RMSE[[as.character(points)]] <- list() stockera les RMSE d'un cas de figure
+  all_RMSE[[as.character(points)]] <- list() # stockera les RMSE d'un cas de figure
   
   for (repet in 1:30) { # pour chaque réplicat
     
