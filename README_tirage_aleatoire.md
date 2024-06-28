@@ -154,15 +154,12 @@ Le reste du modèle ne change pas (pour plus d'explications du modèle, se réf�
     }
   }
 
-## Covariables
-  veg2 = raster("Rgpt_vg_3.tif")
-  vegSG2 = as(veg2, "SpatialGridDataFrame")
+################### Covariables
   
   setwd("Fauche") # à définir pour que la fonction fauche fonctionne
   shapefiles = c("Fauche_2017_seule.shp", "Fauche_2018_seule.shp", "Fauche_2019_seule.shp", "Fauche_2020_seule.shp", "Fauche_2021_seule.shp", "Fauche_2022_seule.shp")
   
-  eau = read.csv("Hauteurs_eau_finales.csv", header = T, stringsAsFactors = T)
-  
+# végétation 
   f.veg.moins = function(x, y, shape) {
     spp <- SpatialPoints(data.frame(x = x, y = y), proj4string = fm_sp_get_crs(vegSG2))
     proj4string(spp) <- fm_sp_get_crs(vegSG2)
@@ -191,6 +188,15 @@ Le reste du modèle ne change pas (pour plus d'explications du modèle, se réf�
     }
   }
 
+  veg = vegTMP
+  veg[vegTMP == 6 | vegTMP == 12 | vegTMP == 4 | vegTMP == 7| vegTMP == 9 | vegTMP == 10] = 1 # rase
+  veg[vegTMP == 14] = 2 # haute fauchee
+  veg[vegTMP == 15] = 3 # haute non fauchee
+  veg[vegTMP == 2] = 4 # arbustive
+  veg[vegTMP == 3] = 5 # roselières 
+  veg[vegTMP == 5] = 6 # friches
+  veg = as.factor(veg)
+
 
 # eau_max
   f.eau.max = function(annee, prospection) {
@@ -216,14 +222,6 @@ Le reste du modèle ne change pas (pour plus d'explications du modèle, se réf�
     }
   }
   
-  veg = vegTMP
-  veg[vegTMP == 6 | vegTMP == 12 | vegTMP == 4 | vegTMP == 7| vegTMP == 9 | vegTMP == 10] = 1 # rase
-  veg[vegTMP == 14] = 2 # haute fauchee
-  veg[vegTMP == 15] = 3 # haute non fauchee
-  veg[vegTMP == 2] = 4 # arbustive
-  veg[vegTMP == 3] = 5 # roselières 
-  veg[vegTMP == 5] = 6 # friches
-  veg = as.factor(veg)
 
  # eau durée
   f.eau.duree = function(annee, prospection) {
